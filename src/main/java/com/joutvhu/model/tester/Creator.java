@@ -134,16 +134,21 @@ public class Creator<T> {
         } else if (value instanceof Collection) {
             ((Collection) newValue).addAll((Collection) value);
         } else if (newValue != null) {
-            for (Field field : modelClass.getFields()) {
-                field.setAccessible(true);
-                field.set(newValue, field.get(value));
-            }
-            for (Field field : modelClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                field.set(newValue, field.get(value));
-            }
+            Class<?> clazz = modelClass;
+            do {
+                copyFields(modelClass.getDeclaredFields(), value, newValue);
+                copyFields(modelClass.getFields(), value, newValue);
+                clazz = clazz.getSuperclass();
+            } while (clazz != null && !Object.class.equals(clazz));
         }
         return newValue;
+    }
+
+    private static void copyFields(Field[] fields, Object v1, Object v2) throws IllegalAccessException {
+        for (Field field : fields) {
+            field.setAccessible(true);
+            field.set(v2, field.get(v1));
+        }
     }
 
     public static <T> T makeProxy(Class<T> modelClass) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -185,7 +190,7 @@ public class Creator<T> {
             return (T) new TreeMap<>();
         if (Dictionary.class.equals(modelClass))
             return (T) new Hashtable<>();
-        if (Temporal.class.equals(modelClass))
+        if (Temporal.class.equals(modelClass) || Instant.class.equals(modelClass))
             return (T) Instant.now();
         if (modelClass.isEnum())
             return makeEnum(modelClass);

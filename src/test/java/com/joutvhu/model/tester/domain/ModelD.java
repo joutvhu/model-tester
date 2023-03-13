@@ -59,5 +59,11 @@ public class ModelD extends ModelC {
         return result;
     }
 
-
+    @Override
+    public String toString() {
+        return "ModelD{" +
+                "e=" + e +
+                ", f=" + f +
+                "} " + super.toString();
+    }
 }
