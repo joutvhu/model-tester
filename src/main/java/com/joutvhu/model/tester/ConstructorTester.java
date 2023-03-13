@@ -11,7 +11,7 @@ class ConstructorTester<T> implements Tester {
     public boolean test() {
         try {
             T result = creatable.create();
-            Assert.assertNotNull(result);
+            return Assert.assertNotNull(result);
         } catch (Throwable e) {
             e.printStackTrace();
         }

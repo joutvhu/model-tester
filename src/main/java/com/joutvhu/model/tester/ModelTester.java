@@ -1,15 +1,21 @@
 package com.joutvhu.model.tester;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ModelTester<T> implements Tester {
+public class ModelTester<T> {
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
 
     public ModelTester(Class<T> modelClass) {
+        int mod = modelClass.getModifiers();
+        if (Modifier.isInterface(mod))
+            throw new TesterException("Can't test an interface.");
+        if (Modifier.isAbstract(mod))
+            throw new TesterException("Can't test an abstract class.");
         this.modelClass = modelClass;
     }
 
@@ -26,6 +32,9 @@ public class ModelTester<T> implements Tester {
                 .toStringMethod();
     }
 
+    /**
+     * Should test all constructors.
+     */
     public ModelTester<T> allConstructor() {
         for (Constructor<?> constructor : modelClass.getConstructors()) {
             testers.add(new ConstructorTester<>(Creator.of(constructor)));
@@ -43,6 +52,9 @@ public class ModelTester<T> implements Tester {
         return this;
     }
 
+    /**
+     * Should test all getters and setters methods.
+     */
     public ModelTester<T> getterSetters() {
         testers.add(new GetterSetterTester<>(modelClass, null, null));
         return this;
@@ -78,7 +90,7 @@ public class ModelTester<T> implements Tester {
      * Should test toString() method
      */
     public ModelTester<T> toStringMethod() {
-        testers.add(new HashCodeTester<>(modelClass));
+        testers.add(new ToStringTester<>(modelClass));
         return this;
     }
 
@@ -87,7 +99,6 @@ public class ModelTester<T> implements Tester {
      *
      * @return false if there is any error.
      */
-    @Override
     public boolean test() {
         boolean success = true;
         for (Tester tester : testers) {
@@ -95,5 +106,14 @@ public class ModelTester<T> implements Tester {
             if (success) success = result;
         }
         return success;
+    }
+
+    /**
+     * Start testing and throws Exception if there is any error.
+     */
+    public void testAndThrows() {
+        if (!test()) {
+            throw new TesterException("Fail when testing class <" + modelClass.getName() + ">");
+        }
     }
 }

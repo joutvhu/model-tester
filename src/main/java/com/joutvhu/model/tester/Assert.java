@@ -44,7 +44,7 @@ class Assert {
     }
 
     private void failNotEqual(Object expected, Object actual, String message) {
-        fail(format(expected, actual, message), expected, actual);
+        fail(format(expected, actual, message));
     }
 
     private String format(Object expected, Object actual, String message) {
@@ -102,37 +102,22 @@ class Assert {
             try {
                 if (obj.getClass().isArray()) {
                     if (obj.getClass().getComponentType().isPrimitive()) {
-                        if (obj instanceof boolean[]) {
+                        if (obj instanceof boolean[])
                             return Arrays.toString((boolean[]) obj);
-                        }
-
-                        if (obj instanceof char[]) {
+                        if (obj instanceof char[])
                             return Arrays.toString((char[]) obj);
-                        }
-
-                        if (obj instanceof short[]) {
+                        if (obj instanceof short[])
                             return Arrays.toString((short[]) obj);
-                        }
-
-                        if (obj instanceof byte[]) {
+                        if (obj instanceof byte[])
                             return Arrays.toString((byte[]) obj);
-                        }
-
-                        if (obj instanceof int[]) {
+                        if (obj instanceof int[])
                             return Arrays.toString((int[]) obj);
-                        }
-
-                        if (obj instanceof long[]) {
+                        if (obj instanceof long[])
                             return Arrays.toString((long[]) obj);
-                        }
-
-                        if (obj instanceof float[]) {
+                        if (obj instanceof float[])
                             return Arrays.toString((float[]) obj);
-                        }
-
-                        if (obj instanceof double[]) {
+                        if (obj instanceof double[])
                             return Arrays.toString((double[]) obj);
-                        }
                     }
 
                     return Arrays.deepToString((Object[]) obj);
@@ -151,11 +136,7 @@ class Assert {
         return obj == null ? "null" : obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj));
     }
 
-    private void fail(String message, Object expected, Object actual) {
-        throw new AssertionException(message, expected, actual);
-    }
-
     private void fail(String message) {
-        throw new AssertionException(message);
+        throw new TesterException(message);
     }
 }

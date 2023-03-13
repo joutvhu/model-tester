@@ -12,6 +12,6 @@ public class ModelTest {
 
     @Test
     public void test_ModelB() {
-        ModelTester.allOf(ModelB.class).test();
+        ModelTester.allOf(ModelB.class).testAndThrows();
     }
 }

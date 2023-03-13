@@ -4,14 +4,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.util.*;
 
 public class Creator<T> {
     private final Class<T> modelClass;
@@ -73,6 +71,13 @@ public class Creator<T> {
         if (values != null)
             return create(modelClass, values);
         return create(modelClass, parameters);
+    }
+
+    private static <T> Class<T> finalClass(Class<T> modelClass) {
+        int mod = modelClass.getModifiers();
+        if (Modifier.isInterface(mod) || Modifier.isAbstract(mod)) {
+        }
+        return modelClass;
     }
 
     public static <T> T create(Class<T> modelClass, List<Creator<?>> parameters) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -163,6 +168,24 @@ public class Creator<T> {
             return (T) BigInteger.valueOf(0);
         if (BigDecimal.class.equals(modelClass))
             return (T) BigDecimal.valueOf(0);
+        if (modelClass.isArray())
+            return (T) new Object[0];
+        if (List.class.equals(modelClass) || Collection.class.equals(modelClass) || AbstractCollection.class.equals(modelClass) || AbstractList.class.equals(modelClass))
+            return (T) new ArrayList<>();
+        if (Map.class.equals(modelClass) || AbstractMap.class.equals(modelClass))
+            return (T) new HashMap<>();
+        if (Set.class.equals(modelClass) || AbstractSet.class.equals(modelClass))
+            return (T) new HashSet<>();
+        if (SortedSet.class.equals(modelClass) || NavigableSet.class.equals(modelClass))
+            return (T) new TreeSet<>();
+        if (Queue.class.equals(modelClass) || Deque.class.equals(modelClass) || AbstractSequentialList.class.equals(modelClass))
+            return (T) new LinkedList<>();
+        if (SortedMap.class.equals(modelClass) || NavigableMap.class.equals(modelClass))
+            return (T) new TreeMap<>();
+        if (Dictionary.class.equals(modelClass))
+            return (T) new Hashtable<>();
+        if (Temporal.class.equals(modelClass))
+            return (T) Instant.now();
         if (modelClass.isEnum())
             return makeEnum(modelClass);
         return null;

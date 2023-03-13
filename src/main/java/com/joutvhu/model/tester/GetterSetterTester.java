@@ -21,48 +21,64 @@ class GetterSetterTester<T> implements Tester {
             T model = Creator.anyOf(modelClass).create();
             if (model == null)
                 return false;
-            Method[] methods = modelClass.getMethods();
-            for (Method method : methods) {
-                if (isGetter(method)) {
-                    Field field = getField(method);
-                    if (field != null && checkName(field.getName()))
-                        testGetter(model, method, field);
-                } else if (isSetter(method)) {
-                    Field field = getField(method);
-                    if (field != null && checkName(field.getName()))
-                        testSetter(model, method, field);
-                }
-            }
+            boolean success = true;
+            if (!testMethods(model, modelClass.getDeclaredMethods()))
+                success = false;
+            if (!testMethods(model, modelClass.getMethods()))
+                success = false;
+            return success;
         } catch (Throwable e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    private void testGetter(T model, Method method, Field field) {
+    private boolean testMethods(T model, Method[] methods) {
+        boolean success = true;
+        for (Method method : methods) {
+            if (isGetter(method)) {
+                Field field = getField(method);
+                if (field != null && checkName(method, field)) {
+                    boolean result = testGetter(model, method, field);
+                    if (success) success = result;
+                }
+            } else if (isSetter(method)) {
+                Field field = getField(method);
+                if (field != null && checkName(method, field)) {
+                    boolean result = testSetter(model, method, field);
+                    if (success) success = result;
+                }
+            }
+        }
+        return success;
+    }
+
+    private boolean testGetter(T model, Method method, Field field) {
         try {
             Object value = Creator.anyOf(field.getType()).create();
             field.setAccessible(true);
             field.set(model, value);
             method.setAccessible(true);
             Object result = method.invoke(model);
-            Assert.assertEquals(value, result);
+            return Assert.assertEquals(value, result);
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        return false;
     }
 
-    private void testSetter(T model, Method method, Field field) {
+    private boolean testSetter(T model, Method method, Field field) {
         try {
             Object value = Creator.anyOf(method.getParameterTypes()[0]).create();
             method.setAccessible(true);
             method.invoke(model, value);
             field.setAccessible(true);
             Object result = field.get(model);
-            Assert.assertEquals(value, result);
+            return Assert.assertEquals(value, result);
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     private Field getField(Method method) {
@@ -71,11 +87,11 @@ class GetterSetterTester<T> implements Tester {
             methodName = methodName.substring(3);
         else if (methodName.startsWith("is"))
             methodName = methodName.substring(2);
-        for (Field field : modelClass.getFields()) {
+        for (Field field : modelClass.getDeclaredFields()) {
             if (methodName.equalsIgnoreCase(field.getName()))
                 return field;
         }
-        for (Field field : modelClass.getDeclaredFields()) {
+        for (Field field : modelClass.getFields()) {
             if (methodName.equalsIgnoreCase(field.getName()))
                 return field;
         }
@@ -99,11 +115,11 @@ class GetterSetterTester<T> implements Tester {
         return methodName.length() > 3 && methodName.startsWith("set") && method.getParameterCount() == 1;
     }
 
-    private boolean checkName(String name) {
+    private boolean checkName(Method method, Field field) {
         if (include != null && !include.isEmpty()) {
-            return include.contains(name);
+            return include.contains(method.getName()) || include.contains(field.getName());
         } else if (exclude != null && !exclude.isEmpty()) {
-            return !exclude.contains(name);
+            return !exclude.contains(method.getName()) && !exclude.contains(field.getName());
         } else {
             return true;
         }
