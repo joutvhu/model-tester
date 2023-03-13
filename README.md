@@ -20,3 +20,35 @@ testImplementation "com.github.joutvhu:model-tester:1.0.0"
     <scope>test</scope>
 </dependency>
 ```
+
+## How to use?
+
+- Provide model class to be used for testing.
+- Set up test options.
+- Use method `test()` or `testAndThrows()` to execute the tester.
+
+```java
+
+public class UserTest {
+    @Test
+    public void test_all() {
+        Assertions.assertTrue(ModelTester.allOf(User.class).test());
+    }
+
+    @Test
+    public void test_and_throws() {
+        ModelTester.allOf(User.class).testAndThrows();
+    }
+
+    @Test
+    public void test_custom() {
+        ModelTester.of(User.class)
+                .allConstructor()
+                .exclude("getId", "setId")
+                .equalsMethod()
+                .hashCodeMethod()
+                .toStringMethod()
+                .testAndThrows();
+    }
+}
+```
