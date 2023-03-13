@@ -41,6 +41,11 @@ public class UserTest {
     }
 
     @Test
+    public void test_safe() {
+        ModelTester.safeOf(User.class).testAndThrows();
+    }
+
+    @Test
     public void test_custom() {
         ModelTester.of(User.class)
                 .constructors()

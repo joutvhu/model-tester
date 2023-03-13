@@ -1,18 +1,28 @@
 package com.joutvhu.model.tester;
 
 class EqualsTester<T> implements Tester {
-    private Class<T> modelClass;
+    private final Class<T> modelClass;
+    private final boolean safe;
 
     EqualsTester(Class<T> modelClass) {
+        this(modelClass, false);
+    }
+
+    EqualsTester(Class<T> modelClass, boolean safe) {
         this.modelClass = modelClass;
+        this.safe = safe;
     }
 
     @Override
     public boolean test() {
         try {
             T model = Creator.anyOf(modelClass).create();
-            T newModel = Creator.makeCopy(model);
-            return Assert.assertEquals(model, newModel);
+            if (safe) {
+                return Assert.assertEquals(model, model);
+            } else {
+                T newModel = Creator.makeCopy(model);
+                return Assert.assertEquals(model, newModel);
+            }
         } catch (Throwable e) {
             e.printStackTrace();
         }

@@ -32,6 +32,15 @@ public class ModelTester<T> {
                 .toStringMethod();
     }
 
+    public static <T> ModelTester<T> safeOf(Class<T> modelClass) {
+        return new ModelTester<>(modelClass)
+                .constructors()
+                .getterSetters()
+                .equalsSafe()
+                .hashCodeSafe()
+                .toStringSafe();
+    }
+
     /**
      * Should test all constructors.
      */
@@ -88,6 +97,14 @@ public class ModelTester<T> {
     }
 
     /**
+     * Test equals() but compare with itself
+     */
+    public ModelTester<T> equalsSafe() {
+        testers.add(new EqualsTester<>(modelClass, true));
+        return this;
+    }
+
+    /**
      * Should test hashCode() method
      */
     public ModelTester<T> hashCodeMethod() {
@@ -96,10 +113,26 @@ public class ModelTester<T> {
     }
 
     /**
+     * Test hashCode() but compare with itself
+     */
+    public ModelTester<T> hashCodeSafe() {
+        testers.add(new HashCodeTester<>(modelClass, true));
+        return this;
+    }
+
+    /**
      * Should test toString() method
      */
     public ModelTester<T> toStringMethod() {
         testers.add(new ToStringTester<>(modelClass));
+        return this;
+    }
+
+    /**
+     * Test toString() but compare with itself
+     */
+    public ModelTester<T> toStringSafe() {
+        testers.add(new ToStringTester<>(modelClass, true));
         return this;
     }
 
