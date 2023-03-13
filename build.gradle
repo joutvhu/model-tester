@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.github.joutvhu'
-version = '1.0.2'
+version = '1.0.0'
 
 def snapshotVersion = version.endsWith('-SNAPSHOT') || version.endsWith('.SNAPSHOT')
 
@@ -26,8 +26,10 @@ repositories {
 
 ext {
     versions = [
+            'commons-lang3.version': '3.12.0'
     ]
     managedVersions = [
+            'org.apache.commons:commons-lang3': 'commons-lang3.version'
     ]
     otherVersions = [
     ]
@@ -42,6 +44,8 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation 'org.apache.commons:commons-lang3'
+
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
@@ -110,7 +114,7 @@ publishing {
 
             pom {
                 name = project.name
-                description = ''
+                description = 'Model Tester is a utility for automatically testing model classes.'
                 url = 'https://github.com/joutvhu/model-tester'
                 licenses {
                     license {
