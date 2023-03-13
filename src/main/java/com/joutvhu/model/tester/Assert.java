@@ -1,7 +1,6 @@
 package com.joutvhu.model.tester;
 
 import lombok.experimental.UtilityClass;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
@@ -52,7 +51,15 @@ class Assert {
     }
 
     private String buildPrefix(String message) {
-        return StringUtils.isNotBlank(message) ? message + " ==> " : "";
+        return isNotBlank(message) ? message + " ==> " : "";
+    }
+
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    private boolean isNotBlank(String str) {
+        return !isBlank(str);
     }
 
     private String formatValues(Object expected, Object actual) {
