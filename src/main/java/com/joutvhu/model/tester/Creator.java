@@ -1,5 +1,6 @@
 package com.joutvhu.model.tester;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -169,7 +170,7 @@ public class Creator<T> {
         if (BigDecimal.class.equals(modelClass))
             return (T) BigDecimal.valueOf(0);
         if (modelClass.isArray())
-            return (T) new Object[0];
+            return (T) Array.newInstance(modelClass.getComponentType(), 0);
         if (List.class.equals(modelClass) || Collection.class.equals(modelClass) || AbstractCollection.class.equals(modelClass) || AbstractList.class.equals(modelClass))
             return (T) new ArrayList<>();
         if (Map.class.equals(modelClass) || AbstractMap.class.equals(modelClass))

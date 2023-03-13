@@ -87,12 +87,22 @@ class GetterSetterTester<T> implements Tester {
             methodName = methodName.substring(3);
         else if (methodName.startsWith("is"))
             methodName = methodName.substring(2);
-        for (Field field : modelClass.getDeclaredFields()) {
-            if (methodName.equalsIgnoreCase(field.getName()))
+        Class<?> clazz = modelClass;
+        do {
+            Field field = getField(methodName, clazz.getDeclaredFields());
+            if (field != null)
                 return field;
-        }
-        for (Field field : modelClass.getFields()) {
-            if (methodName.equalsIgnoreCase(field.getName()))
+            field = getField(methodName, clazz.getFields());
+            if (field != null)
+                return field;
+            clazz = clazz.getSuperclass();
+        } while (clazz != null && !Object.class.equals(clazz));
+        return null;
+    }
+
+    private Field getField(String fieldName, Field[] fields) {
+        for (Field field : fields) {
+            if (fieldName.equalsIgnoreCase(field.getName()))
                 return field;
         }
         return null;
