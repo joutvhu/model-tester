@@ -25,7 +25,7 @@ public class ModelTester<T> {
 
     public static <T> ModelTester<T> allOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
-                .allConstructor()
+                .constructors()
                 .getterSetters()
                 .equalsMethod()
                 .hashCodeMethod()
@@ -35,13 +35,16 @@ public class ModelTester<T> {
     /**
      * Should test all constructors.
      */
-    public ModelTester<T> allConstructor() {
+    public ModelTester<T> constructors() {
         for (Constructor<?> constructor : modelClass.getConstructors()) {
             testers.add(new ConstructorTester<>(Creator.of(constructor)));
         }
         return this;
     }
 
+    /**
+     * Should test a constructor with parameters.
+     */
     public ModelTester<T> constructor(Object... parameters) {
         testers.add(new ConstructorTester<>(Creator.byParams(modelClass, parameters)));
         return this;
@@ -53,20 +56,26 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test all getters and setters methods.
+     * Should test all getter and setter methods.
      */
     public ModelTester<T> getterSetters() {
         testers.add(new GetterSetterTester<>(modelClass, null, null));
         return this;
     }
 
-    public ModelTester<T> include(String... fields) {
-        testers.add(new GetterSetterTester<>(modelClass, Arrays.asList(fields), null));
+    /**
+     * Only getters setters are listed.
+     */
+    public ModelTester<T> include(String... names) {
+        testers.add(new GetterSetterTester<>(modelClass, Arrays.asList(names), null));
         return this;
     }
 
-    public ModelTester<T> exclude(String... fields) {
-        testers.add(new GetterSetterTester<>(modelClass, null, Arrays.asList(fields)));
+    /**
+     * Except for the getter setter methods listed.
+     */
+    public ModelTester<T> exclude(String... names) {
+        testers.add(new GetterSetterTester<>(modelClass, null, Arrays.asList(names)));
         return this;
     }
 

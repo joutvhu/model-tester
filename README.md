@@ -43,7 +43,7 @@ public class UserTest {
     @Test
     public void test_custom() {
         ModelTester.of(User.class)
-                .allConstructor()
+                .constructors()
                 .exclude("getId", "setId")
                 .equalsMethod()
                 .hashCodeMethod()
