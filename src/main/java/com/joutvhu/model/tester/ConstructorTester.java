@@ -10,12 +10,39 @@ class ConstructorTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
-            System.out.println("Start testing constructor");
             T result = creatable.create();
-            return Assert.assertNotNull(result);
+            boolean success = Assert.assertNotNull(result);
+            if (success)
+                System.out.println("Success: " + creatable.modelClass.getName() + "(" + params() + ")");
+            else
+                System.err.println("Failure: " + creatable.modelClass.getName() + "(" + params() + ")");
+            return success;
         } catch (Throwable e) {
+            System.err.println("Error: " + creatable.modelClass.getName() + "(" + params() + ")");
             e.printStackTrace();
         }
         return false;
+    }
+
+    private String params() {
+        boolean comma = false;
+        StringBuilder builder = new StringBuilder();
+        if (creatable.values != null) {
+            for (Object value : creatable.values) {
+                if (comma)
+                    builder.append(",");
+                builder.append(value.getClass().getName());
+                comma = true;
+            }
+        }
+        if (creatable.parameters != null) {
+            for (Creator<?> value : creatable.parameters) {
+                if (comma)
+                    builder.append(",");
+                builder.append(value.modelClass.getName());
+                comma = true;
+            }
+        }
+        return builder.toString();
     }
 }

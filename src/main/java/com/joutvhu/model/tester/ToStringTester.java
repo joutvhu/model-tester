@@ -16,15 +16,21 @@ class ToStringTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
-            System.out.println("Start testing method toString()");
             T model = Creator.anyOf(modelClass).create();
+            boolean success = true;
             if (safe) {
-                return Assert.assertEquals(model.toString(), model.toString());
+                success = Assert.assertEquals(model.toString(), model.toString());
             } else {
                 T newModel = Creator.makeCopy(model);
-                return Assert.assertEquals(model.toString(), newModel.toString());
+                success = Assert.assertEquals(model.toString(), newModel.toString());
             }
+            if (success)
+                System.out.println("Success: " + modelClass.getName() + ".toString()");
+            else
+                System.err.println("Failure: " + modelClass.getName() + ".toString()");
+            return success;
         } catch (Throwable e) {
+            System.err.println("Error: " + modelClass.getName() + ".toString()");
             e.printStackTrace();
         }
         return false;

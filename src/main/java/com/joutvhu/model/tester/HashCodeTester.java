@@ -16,15 +16,21 @@ class HashCodeTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
-            System.out.println("Start testing method hashCode()");
             T model = Creator.anyOf(modelClass).create();
+            boolean success = true;
             if (safe) {
-                return Assert.assertEquals(model.hashCode(), model.hashCode());
+                success = Assert.assertEquals(model.hashCode(), model.hashCode());
             } else {
                 T newModel = Creator.makeCopy(model);
-                return Assert.assertEquals(model.hashCode(), newModel.hashCode());
+                success = Assert.assertEquals(model.hashCode(), newModel.hashCode());
             }
+            if (success)
+                System.out.println("Success: " + modelClass.getName() + ".hashCode()");
+            else
+                System.err.println("Failure: " + modelClass.getName() + ".hashCode()");
+            return success;
         } catch (Throwable e) {
+            System.err.println("Error: " + modelClass.getName() + ".hashCode()");
             e.printStackTrace();
         }
         return false;

@@ -20,7 +20,6 @@ class GetterSetterTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
-            System.out.println("Start testing getters and setters");
             T model = Creator.anyOf(modelClass).create();
             if (model == null)
                 return false;
@@ -71,15 +70,19 @@ class GetterSetterTester<T> implements Tester {
 
     private boolean testGetter(T model, Method method, Field field) {
         try {
-            System.out.println("Start testing method " + method.getName());
             Object value = createTestValue(field.getType());
             field.setAccessible(true);
             field.set(model, value);
             method.setAccessible(true);
             Object result = method.invoke(model);
-            return Assert.assertEquals(value, result);
+            boolean success = Assert.assertEquals(value, result);
+            if (success)
+                System.out.println("Success: " + modelClass.getName() + "." + method.getName() + "()");
+            else
+                System.err.println("Failure: " + modelClass.getName() + "." + method.getName() + "()");
+            return success;
         } catch (Throwable e) {
-            System.err.println("Fail when testing method " + method.getName());
+            System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "()");
             e.printStackTrace();
         }
         return false;
@@ -87,15 +90,19 @@ class GetterSetterTester<T> implements Tester {
 
     private boolean testSetter(T model, Method method, Field field) {
         try {
-            System.out.println("Start testing method " + method.getName());
             Object value = createTestValue(method.getParameterTypes()[0]);
             method.setAccessible(true);
             method.invoke(model, value);
             field.setAccessible(true);
             Object result = field.get(model);
-            return Assert.assertEquals(value, result);
+            boolean success = Assert.assertEquals(value, result);
+            if (success)
+                System.out.println("Success: " + modelClass.getName() + ".equals(" + method.getParameterTypes()[0].getName() + ")");
+            else
+                System.err.println("Failure: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
+            return success;
         } catch (Throwable e) {
-            System.err.println("Fail when testing method " + method.getName());
+            System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
             e.printStackTrace();
         }
         return false;

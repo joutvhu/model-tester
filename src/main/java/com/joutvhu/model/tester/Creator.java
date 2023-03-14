@@ -16,10 +16,10 @@ import java.time.temporal.Temporal;
 import java.util.*;
 
 public class Creator<T> {
-    private final Class<T> modelClass;
-    private final List<Creator<?>> parameters;
-    private final Object[] values;
-    private final T staticValue;
+    final Class<T> modelClass;
+    final List<Creator<?>> parameters;
+    final Object[] values;
+    final T staticValue;
 
     private Creator(Class<T> modelClass, List<Creator<?>> parameters, T staticValue, Object[] values) {
         this.modelClass = modelClass;
