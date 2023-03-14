@@ -45,14 +45,18 @@ class GetterSetterTester<T> implements Tester {
                 tested.add(method);
             if (isGetter(method)) {
                 Field field = getField(method);
-                if (field != null && checkName(method, field)) {
-                    boolean result = testGetter(model, method, field);
+                if (checkName(method, field)) {
+                    boolean result = field != null ?
+                            testGetter(model, method, field) :
+                            testGetter(model, method);
                     if (success) success = result;
                 }
             } else if (isSetter(method)) {
                 Field field = getField(method);
-                if (field != null && checkName(method, field)) {
-                    boolean result = testSetter(model, method, field);
+                if (checkName(method, field)) {
+                    boolean result = field != null ?
+                            testSetter(model, method, field) :
+                            testSetter(model, method);
                     if (success) success = result;
                 }
             }
@@ -88,6 +92,19 @@ class GetterSetterTester<T> implements Tester {
         return false;
     }
 
+    private boolean testGetter(T model, Method method) {
+        try {
+            method.setAccessible(true);
+            method.invoke(model);
+            System.out.println("Success: " + modelClass.getName() + "." + method.getName() + "()");
+            return true;
+        } catch (Throwable e) {
+            System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "()");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private boolean testSetter(T model, Method method, Field field) {
         try {
             Object value = createTestValue(method.getParameterTypes()[0]);
@@ -97,7 +114,7 @@ class GetterSetterTester<T> implements Tester {
             Object result = field.get(model);
             boolean success = Assert.assertEquals(value, result);
             if (success)
-                System.out.println("Success: " + modelClass.getName() + ".equals(" + method.getParameterTypes()[0].getName() + ")");
+                System.out.println("Success: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
             else
                 System.err.println("Failure: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
             return success;
@@ -106,6 +123,20 @@ class GetterSetterTester<T> implements Tester {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private boolean testSetter(T model, Method method) {
+        try {
+            Object value = createTestValue(method.getParameterTypes()[0]);
+            method.setAccessible(true);
+            method.invoke(model, value);
+            System.out.println("Success: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
+            return true;
+        } catch (Throwable e) {
+            System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private Field getField(Method method) {
@@ -154,9 +185,9 @@ class GetterSetterTester<T> implements Tester {
 
     private boolean checkName(Method method, Field field) {
         if (include != null && !include.isEmpty()) {
-            return include.contains(method.getName()) || include.contains(field.getName());
+            return include.contains(method.getName()) || (field != null && include.contains(field.getName()));
         } else if (exclude != null && !exclude.isEmpty()) {
-            return !exclude.contains(method.getName()) && !exclude.contains(field.getName());
+            return !exclude.contains(method.getName()) && (field == null || !exclude.contains(field.getName()));
         } else {
             return true;
         }
