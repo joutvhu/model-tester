@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.github.joutvhu'
-version = '1.0.1'
+version = '1.0.2'
 
 def snapshotVersion = version.endsWith('-SNAPSHOT') || version.endsWith('.SNAPSHOT')
 
@@ -26,8 +26,10 @@ repositories {
 
 ext {
     versions = [
+            'javassist.version': '3.29.2-GA'
     ]
     managedVersions = [
+            'org.javassist:javassist': 'javassist.version'
     ]
     otherVersions = [
     ]
@@ -42,6 +44,8 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation 'org.javassist:javassist'
+
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 

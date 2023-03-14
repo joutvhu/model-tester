@@ -1,11 +1,14 @@
 package com.joutvhu.model.tester;
 
+import javassist.util.proxy.ProxyFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -69,16 +72,65 @@ public class Creator<T> {
         T result = makeProxy(modelClass);
         if (result != null)
             return result;
+        int mod = modelClass.getModifiers();
+        if (Modifier.isInterface(mod))
+            return interfaceProxy(modelClass);
+        if (Modifier.isAbstract(mod))
+            return abstractProxy(modelClass);
         if (values != null)
             return create(modelClass, values);
         return create(modelClass, parameters);
     }
 
-    private static <T> Class<T> finalClass(Class<T> modelClass) {
-        int mod = modelClass.getModifiers();
-        if (Modifier.isInterface(mod) || Modifier.isAbstract(mod)) {
+    private <T> T abstractProxy(Class<T> modelClass) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        ProxyFactory factory = new ProxyFactory();
+        factory.setSuperclass(modelClass);
+        factory.setFilter(method -> Modifier.isAbstract(method.getModifiers()));
+        Class<?>[] parameterTypes;
+        Object[] parameterValues;
+        if (values != null) {
+            parameterTypes = new Class[values.length];
+            parameterValues = values;
+            for (int i = 0, len = values.length; i < len; i++) {
+                parameterTypes[i] = values[i].getClass();
+            }
+        } else {
+            if (parameters != null) {
+                parameterTypes = new Class[parameters.size()];
+                for (int i = 0, len = parameters.size(); i < len; i++) {
+                    parameterTypes[i] = parameters.get(i).modelClass;
+                }
+            } else {
+                parameterTypes = modelClass.getConstructors()[0].getParameterTypes();
+            }
+            parameterValues = new Object[parameterTypes.length];
+            for (int i = 0, len = parameterTypes.length; i < len; i++) {
+                parameterValues[i] = anyOf(parameterTypes[i]).create();
+            }
         }
-        return modelClass;
+        return (T) factory.create(parameterTypes, parameterValues, (self, thisMethod, proceed, args) -> {
+            if (!Void.class.equals(thisMethod.getReturnType())) {
+                try {
+                    return anyOf(thisMethod.getReturnType()).create();
+                } catch (Throwable x) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    private <T> T interfaceProxy(Class<T> modelClass) {
+        return (T) Proxy.newProxyInstance(modelClass.getClassLoader(), new Class[]{modelClass}, (proxy, method, args) -> {
+            if (!Void.class.equals(method.getReturnType())) {
+                try {
+                    return anyOf(method.getReturnType()).create();
+                } catch (Throwable x) {
+                    return null;
+                }
+            }
+            return null;
+        });
     }
 
     public static <T> T create(Class<T> modelClass, List<Creator<?>> parameters) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -88,8 +140,8 @@ public class Creator<T> {
             parameterTypes[i] = parameters.get(i).modelClass;
             params[i] = parameters.get(i).create();
         }
-        Constructor<T> constructor = modelClass.getConstructor(parameterTypes);
-        return constructor.newInstance(params);
+        Constructor<?> constructor = modelClass.getConstructor(parameterTypes);
+        return (T) constructor.newInstance(params);
     }
 
     public static <T> T create(Class<T> modelClass, Object... params) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -146,8 +198,10 @@ public class Creator<T> {
 
     private static void copyFields(Field[] fields, Object v1, Object v2) throws IllegalAccessException {
         for (Field field : fields) {
-            field.setAccessible(true);
-            field.set(v2, field.get(v1));
+            if (!Modifier.isFinal(field.getModifiers())) {
+                field.setAccessible(true);
+                field.set(v2, field.get(v1));
+            }
         }
     }
 
