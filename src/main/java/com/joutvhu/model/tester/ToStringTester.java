@@ -16,6 +16,7 @@ class ToStringTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
+            System.out.println("Start testing method toString()");
             T model = Creator.anyOf(modelClass).create();
             if (safe) {
                 return Assert.assertEquals(model.toString(), model.toString());

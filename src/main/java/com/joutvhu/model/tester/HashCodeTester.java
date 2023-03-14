@@ -16,6 +16,7 @@ class HashCodeTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
+            System.out.println("Start testing method hashCode()");
             T model = Creator.anyOf(modelClass).create();
             if (safe) {
                 return Assert.assertEquals(model.hashCode(), model.hashCode());

@@ -16,6 +16,7 @@ class EqualsTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
+            System.out.println("Start testing method equals()");
             T model = Creator.anyOf(modelClass).create();
             if (safe) {
                 return Assert.assertEquals(model, model);

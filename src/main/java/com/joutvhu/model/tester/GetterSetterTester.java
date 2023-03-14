@@ -18,6 +18,7 @@ class GetterSetterTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
+            System.out.println("Start testing getters and setters");
             T model = Creator.anyOf(modelClass).create();
             if (model == null)
                 return false;
@@ -55,6 +56,7 @@ class GetterSetterTester<T> implements Tester {
 
     private boolean testGetter(T model, Method method, Field field) {
         try {
+            System.out.println("Start testing method " + method.getName());
             Object value = Creator.anyOf(field.getType()).create();
             field.setAccessible(true);
             field.set(model, value);
@@ -62,6 +64,7 @@ class GetterSetterTester<T> implements Tester {
             Object result = method.invoke(model);
             return Assert.assertEquals(value, result);
         } catch (Throwable e) {
+            System.err.println("Fail when testing method " + method.getName());
             e.printStackTrace();
         }
         return false;
@@ -69,6 +72,7 @@ class GetterSetterTester<T> implements Tester {
 
     private boolean testSetter(T model, Method method, Field field) {
         try {
+            System.out.println("Start testing method " + method.getName());
             Object value = Creator.anyOf(method.getParameterTypes()[0]).create();
             method.setAccessible(true);
             method.invoke(model, value);
@@ -76,6 +80,7 @@ class GetterSetterTester<T> implements Tester {
             Object result = field.get(model);
             return Assert.assertEquals(value, result);
         } catch (Throwable e) {
+            System.err.println("Fail when testing method " + method.getName());
             e.printStackTrace();
         }
         return false;

@@ -10,6 +10,7 @@ class ConstructorTester<T> implements Tester {
     @Override
     public boolean test() {
         try {
+            System.out.println("Start testing constructor");
             T result = creatable.create();
             return Assert.assertNotNull(result);
         } catch (Throwable e) {
