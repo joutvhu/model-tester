@@ -2,7 +2,9 @@ package com.joutvhu.model.tester;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 class GetterSetterTester<T> implements Tester {
     private Class<T> modelClass;
@@ -23,9 +25,10 @@ class GetterSetterTester<T> implements Tester {
             if (model == null)
                 return false;
             boolean success = true;
-            if (!testMethods(model, modelClass.getDeclaredMethods()))
+            Set<Method> tested = new HashSet<>();
+            if (!testMethods(model, modelClass.getDeclaredMethods(), tested))
                 success = false;
-            if (!testMethods(model, modelClass.getMethods()))
+            if (!testMethods(model, modelClass.getMethods(), tested))
                 success = false;
             return success;
         } catch (Throwable e) {
@@ -34,9 +37,13 @@ class GetterSetterTester<T> implements Tester {
         return false;
     }
 
-    private boolean testMethods(T model, Method[] methods) {
+    private boolean testMethods(T model, Method[] methods, Set<Method> tested) {
         boolean success = true;
         for (Method method : methods) {
+            if (tested.contains(method))
+                continue;
+            else
+                tested.add(method);
             if (isGetter(method)) {
                 Field field = getField(method);
                 if (field != null && checkName(method, field)) {
@@ -54,10 +61,18 @@ class GetterSetterTester<T> implements Tester {
         return success;
     }
 
+    private Object createTestValue(Class<?> fieldClass) {
+        try {
+            return Creator.anyOf(fieldClass).create();
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
     private boolean testGetter(T model, Method method, Field field) {
         try {
             System.out.println("Start testing method " + method.getName());
-            Object value = Creator.anyOf(field.getType()).create();
+            Object value = createTestValue(field.getType());
             field.setAccessible(true);
             field.set(model, value);
             method.setAccessible(true);
@@ -73,7 +88,7 @@ class GetterSetterTester<T> implements Tester {
     private boolean testSetter(T model, Method method, Field field) {
         try {
             System.out.println("Start testing method " + method.getName());
-            Object value = Creator.anyOf(method.getParameterTypes()[0]).create();
+            Object value = createTestValue(method.getParameterTypes()[0]);
             method.setAccessible(true);
             method.invoke(model, value);
             field.setAccessible(true);

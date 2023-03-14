@@ -7,7 +7,6 @@ import com.joutvhu.model.tester.domain.ModelD;
 import com.joutvhu.model.tester.domain.ModelE;
 import com.joutvhu.model.tester.domain.ModelF;
 import com.joutvhu.model.tester.domain.ModelS;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ModelTest {
@@ -23,9 +22,7 @@ public class ModelTest {
 
     @Test
     public void test_ModelC() {
-        Assertions.assertThrows(Exception.class, () -> {
-            ModelTester.allOf(ModelC.class).test();
-        });
+        ModelTester.allOf(ModelC.class).testAndThrows();
     }
 
     @Test

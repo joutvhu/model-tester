@@ -14,8 +14,6 @@ public class ModelTester<T> {
         int mod = modelClass.getModifiers();
         if (Modifier.isInterface(mod))
             throw new TesterException("Can't test an interface.");
-        if (Modifier.isAbstract(mod))
-            throw new TesterException("Can't test an abstract class.");
         this.modelClass = modelClass;
     }
 

@@ -15,6 +15,7 @@ public class ModelS {
     private Queue<String> c;
     private Temporal t;
     private SortedSet<Integer> s;
+    private ModelC x;
 
     public ModelS(Set<String> a, String b, Queue<String> c, Temporal t, SortedSet<Integer> s) {
         this.a = a;
@@ -22,6 +23,14 @@ public class ModelS {
         this.c = c;
         this.t = t;
         this.s = s;
+    }
+
+    public ModelC getX() {
+        return x;
+    }
+
+    public void setX(ModelC x) {
+        this.x = x;
     }
 
     public Set<String> getA() {
