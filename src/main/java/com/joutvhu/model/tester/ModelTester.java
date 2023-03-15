@@ -1,6 +1,5 @@
 package com.joutvhu.model.tester;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +42,8 @@ public class ModelTester<T> {
      * Should test all constructors.
      */
     public ModelTester<T> constructors() {
-        for (Constructor<?> constructor : modelClass.getConstructors()) {
-            testers.add(new ConstructorTester<>(Creator.of(constructor)));
+        for (Creator<T> creatable : Creator.allOf(modelClass)) {
+            testers.add(new ConstructorTester<>(creatable));
         }
         return this;
     }

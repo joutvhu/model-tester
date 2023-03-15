@@ -10,6 +10,7 @@ public class ModelE {
     private short a;
     private Byte b;
     private BigInteger e;
+    private EnumX x;
 
     public ModelE() {
     }
@@ -36,6 +37,14 @@ public class ModelE {
 
     public void setE(BigInteger e) {
         this.e = e;
+    }
+
+    public EnumX getX() {
+        return x;
+    }
+
+    public void setX(EnumX x) {
+        this.x = x;
     }
 
     @Override

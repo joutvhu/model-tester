@@ -6,7 +6,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
@@ -50,6 +49,8 @@ public class Creator<T> {
             return new Creator<>(modelClass, null, result, null);
 
         Constructor<T>[] constructors = (Constructor<T>[]) modelClass.getConstructors();
+        if (constructors.length == 0)
+            constructors = (Constructor<T>[]) modelClass.getDeclaredConstructors();
         if (constructors.length > 0) {
             Constructor<T> constructor = constructors[0];
             for (Constructor<T> c : constructors) {
@@ -64,6 +65,31 @@ public class Creator<T> {
             return of(modelClass, parameters);
         }
         return new Creator<>(modelClass, new ArrayList<>(), null, null);
+    }
+
+    public static <T> Creator<T>[] allOf(Class<T> modelClass) {
+        ArrayList<Creator<T>> creators = new ArrayList<>();
+        if (modelClass.isEnum()) {
+            Object[] values = EnumSet.allOf((Class<? extends Enum>) modelClass).toArray();
+            for (Object value : values) {
+                creators.add(new Creator<>(modelClass, null, (T) value, null));
+            }
+        } else {
+            Set<Constructor<?>> created = new HashSet<>();
+            for (Constructor<?> constructor : modelClass.getConstructors()) {
+                if (!created.contains(constructor)) {
+                    created.add(constructor);
+                    creators.add(Creator.of((Constructor<T>) constructor));
+                }
+            }
+            for (Constructor<?> constructor : modelClass.getDeclaredConstructors()) {
+                if (!created.contains(constructor)) {
+                    created.add(constructor);
+                    creators.add(Creator.of((Constructor<T>) constructor));
+                }
+            }
+        }
+        return creators.toArray(new Creator[creators.size()]);
     }
 
     public T create() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
@@ -101,7 +127,14 @@ public class Creator<T> {
                     parameterTypes[i] = parameters.get(i).modelClass;
                 }
             } else {
-                parameterTypes = modelClass.getConstructors()[0].getParameterTypes();
+                Constructor<T>[] constructors = (Constructor<T>[]) modelClass.getConstructors();
+                if (constructors.length == 0)
+                    constructors = (Constructor<T>[]) modelClass.getDeclaredConstructors();
+                if (constructors.length > 0) {
+                    parameterTypes = constructors[0].getParameterTypes();
+                } else {
+                    parameterTypes = new Class[0];
+                }
             }
             parameterValues = new Object[parameterTypes.length];
             for (int i = 0, len = parameterTypes.length; i < len; i++) {
@@ -154,7 +187,7 @@ public class Creator<T> {
         return constructor.newInstance(params);
     }
 
-    public static <T> T tryMakeProxy(Class<T> modelClass) {
+    private static <T> T tryMakeProxy(Class<T> modelClass) {
         try {
             return makeProxy(modelClass);
         } catch (Throwable e) {
@@ -205,7 +238,7 @@ public class Creator<T> {
         }
     }
 
-    public static <T> T makeProxy(Class<T> modelClass) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    private static <T> T makeProxy(Class<T> modelClass) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         if (String.class.equals(modelClass))
             return (T) "";
         if (Boolean.class.equals(modelClass) || modelClass == boolean.class)
@@ -246,14 +279,14 @@ public class Creator<T> {
             return (T) new Hashtable<>();
         if (Temporal.class.equals(modelClass) || Instant.class.equals(modelClass))
             return (T) Instant.now();
-        if (modelClass.isEnum())
-            return makeEnum(modelClass);
-        return null;
+        return makeEnum(modelClass);
     }
 
-    public static <T> T makeEnum(Class<T> modelClass) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method m = modelClass.getMethod("values", new Class[0]);
-        Object[] o = (Object[]) m.invoke(null, new Object[0]);
-        return (T) o[0];
+    private static <T> T makeEnum(Class<T> modelClass) {
+        if (modelClass.isEnum()) {
+            Object[] values = EnumSet.allOf((Class<? extends Enum>) modelClass).toArray();
+            return (T) values[0];
+        }
+        return null;
     }
 }

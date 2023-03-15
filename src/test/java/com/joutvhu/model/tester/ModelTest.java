@@ -1,5 +1,6 @@
 package com.joutvhu.model.tester;
 
+import com.joutvhu.model.tester.domain.EnumX;
 import com.joutvhu.model.tester.domain.ModelA;
 import com.joutvhu.model.tester.domain.ModelB;
 import com.joutvhu.model.tester.domain.ModelC;
@@ -43,5 +44,10 @@ public class ModelTest {
     @Test
     public void test_ModelS() {
         ModelTester.safeOf(ModelS.class).testAndThrows();
+    }
+
+    @Test
+    public void test_EnumX() {
+        ModelTester.allOf(EnumX.class).testAndThrows();
     }
 }
