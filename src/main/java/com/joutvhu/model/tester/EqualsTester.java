@@ -2,7 +2,9 @@ package com.joutvhu.model.tester;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 class EqualsTester<T> implements Tester {
@@ -61,9 +63,19 @@ class EqualsTester<T> implements Tester {
     }
 
     private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested) {
+        boolean restore = modelClass.isEnum();
+        Map<Field, Object> backup = new HashMap<>();
         for (Field field : fields) {
             try {
-                if (!tested.contains(field) && !Modifier.isFinal(field.getModifiers())) {
+                if (restore) {
+                    field.setAccessible(true);
+                    backup.put(field, field.get(model));
+                }
+            } catch (Throwable e) {
+                // Do nothing
+            }
+            try {
+                if (!tested.contains(field) && !Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
                     tested.add(field);
                     field.setAccessible(true);
                     Class<?> fieldType = field.getType();
@@ -89,6 +101,18 @@ class EqualsTester<T> implements Tester {
                     field.set(newModel, field.get(model));
                 }
             } catch (Throwable e) {
+                // Do nothing
+            }
+        }
+        if (restore && !backup.isEmpty()) {
+            for (Map.Entry<Field, Object> entry :  backup.entrySet()) {
+                try {
+                    Field field = entry.getKey();
+                    Object value = entry.getValue();
+                    field.set(model, value);
+                } catch (Throwable e) {
+                    // Do nothing
+                }
             }
         }
     }

@@ -1,7 +1,9 @@
 package com.joutvhu.model.tester;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,33 +48,49 @@ class GetterSetterTester<T> implements Tester {
             if (isGetter(method)) {
                 Field field = getField(method);
                 if (checkName(method, field)) {
-                    boolean result = field != null ?
-                            testGetter(model, method, field) :
-                            testGetter(model, method);
-                    if (success) success = result;
+                    if (field != null && method.getReturnType().equals(field.getType()) &&
+                            !Modifier.isFinal(field.getModifiers()) &&
+                            !Modifier.isStatic(field.getModifiers())) {
+                        success = testGetter(model, method, field) && success;
+                    } else {
+                        success = testGetter(model, method) && success;
+                    }
                 }
             } else if (isSetter(method)) {
                 Field field = getField(method);
                 if (checkName(method, field)) {
-                    boolean result = field != null ?
-                            testSetter(model, method, field) :
-                            testSetter(model, method);
-                    if (success) success = result;
+                    if (field != null && method.getParameterTypes()[0].equals(field.getType()) &&
+                            !Modifier.isFinal(field.getModifiers()) &&
+                            !Modifier.isStatic(field.getModifiers())) {
+                        success = testSetter(model, method, field) && success;
+                    } else {
+                        success = testSetter(model, method) && success;
+                    }
                 }
             }
         }
         return success;
     }
 
-    private Object createTestValue(Class<?> fieldClass) {
+    private Object createTestValue(Class<?> fieldClass) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         try {
             return Creator.anyOf(fieldClass).create();
         } catch (Throwable e) {
-            return null;
+            if (Creator.isNullable(fieldClass))
+                return null;
+            throw e;
         }
     }
 
     private boolean testGetter(T model, Method method, Field field) {
+        boolean restore = modelClass.isEnum();
+        Object backup = null;
+        try {
+            field.setAccessible(true);
+            backup = field.get(model);
+        } catch (Throwable e) {
+            restore = false;
+        }
         try {
             Object value = createTestValue(field.getType());
             field.setAccessible(true);
@@ -88,6 +106,15 @@ class GetterSetterTester<T> implements Tester {
         } catch (Throwable e) {
             System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "()");
             e.printStackTrace();
+        } finally {
+            if (restore) {
+                try {
+                    field.setAccessible(true);
+                    field.set(model, backup);
+                } catch (Throwable e) {
+                    // Do nothing
+                }
+            }
         }
         return false;
     }
@@ -106,6 +133,14 @@ class GetterSetterTester<T> implements Tester {
     }
 
     private boolean testSetter(T model, Method method, Field field) {
+        boolean restore = modelClass.isEnum();
+        Object backup = null;
+        try {
+            field.setAccessible(true);
+            backup = field.get(model);
+        } catch (Throwable e) {
+            restore = false;
+        }
         try {
             Object value = createTestValue(method.getParameterTypes()[0]);
             method.setAccessible(true);
@@ -121,6 +156,15 @@ class GetterSetterTester<T> implements Tester {
         } catch (Throwable e) {
             System.err.println("Error: " + modelClass.getName() + "." + method.getName() + "(" + method.getParameterTypes()[0].getName() + ")");
             e.printStackTrace();
+        } finally {
+            if (restore) {
+                try {
+                    field.setAccessible(true);
+                    field.set(model, backup);
+                } catch (Throwable e) {
+                    // Do nothing
+                }
+            }
         }
         return false;
     }
