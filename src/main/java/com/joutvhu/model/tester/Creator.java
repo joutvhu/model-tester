@@ -138,7 +138,14 @@ public class Creator<T> {
             }
             parameterValues = new Object[parameterTypes.length];
             for (int i = 0, len = parameterTypes.length; i < len; i++) {
-                parameterValues[i] = anyOf(parameterTypes[i]).create();
+                try {
+                    parameterValues[i] = anyOf(parameterTypes[i]).create();
+                } catch (Throwable e) {
+                    if (isNullable(parameterTypes[i]))
+                        parameterValues[i] = null;
+                    else
+                        throw e;
+                }
             }
         }
         return (T) factory.create(parameterTypes, parameterValues, (self, thisMethod, proceed, args) -> {
@@ -171,7 +178,14 @@ public class Creator<T> {
         Object[] params = new Object[parameters.size()];
         for (int i = 0, len = parameters.size(); i < len; i++) {
             parameterTypes[i] = parameters.get(i).modelClass;
-            params[i] = parameters.get(i).create();
+            try {
+                params[i] = parameters.get(i).create();
+            } catch (Throwable e) {
+                if (isNullable(parameters.get(i).modelClass))
+                    params[i] = null;
+                else
+                    throw e;
+            }
         }
         Constructor<?> constructor = modelClass.getConstructor(parameterTypes);
         return (T) constructor.newInstance(params);
@@ -238,7 +252,18 @@ public class Creator<T> {
         }
     }
 
-    private static <T> T makeProxy(Class<T> modelClass) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    public static boolean isNullable(Class<?> modelClass) {
+        return modelClass != boolean.class &&
+                modelClass != int.class &&
+                modelClass != long.class &&
+                modelClass != float.class &&
+                modelClass != double.class &&
+                modelClass != char.class &&
+                modelClass != byte.class &&
+                modelClass != short.class;
+    }
+
+    private static <T> T makeProxy(Class<T> modelClass) {
         if (String.class.equals(modelClass))
             return (T) "";
         if (Boolean.class.equals(modelClass) || modelClass == boolean.class)
