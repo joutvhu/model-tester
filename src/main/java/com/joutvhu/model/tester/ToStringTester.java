@@ -3,6 +3,13 @@ package com.joutvhu.model.tester;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tester implementation for verifying the {@link Object#toString()} contract.
+ * Verifies that equal objects have equal string representations and that the
+ * method does not throw exceptions.
+ *
+ * @param <T> the type of model being tested
+ */
 class ToStringTester<T> implements Tester {
     private final Class<T> modelClass;
     private final boolean safe;
@@ -17,6 +24,11 @@ class ToStringTester<T> implements Tester {
     }
 
     @Override
+    /**
+     * Verifies that the toString method returns consistent results and doesn't crash.
+     *
+     * @return list of results for string representation check.
+     */
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

@@ -3,6 +3,11 @@ package com.joutvhu.model.tester;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tester implementation for verifying class constructors and instantiation.
+ *
+ * @param <T> the type of model being tested
+ */
 class ConstructorTester<T> implements Tester {
     private Creator<T> creatable;
 
@@ -11,6 +16,11 @@ class ConstructorTester<T> implements Tester {
     }
 
     @Override
+    /**
+     * Executes the constructor test by attempting to instantiate the class via the provided {@link Creator}.
+     *
+     * @return list containing the result of the instantiation attempt.
+     */
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

@@ -12,6 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Tester implementation for verifying the {@link Object#equals(Object)} contract.
+ * Checks for reflexivity, null-safety, and verifies that changing field values
+ * results in inequality.
+ *
+ * @param <T> the type of model being tested
+ */
 class EqualsTester<T> implements Tester {
     private static final Logger log = LoggerFactory.getLogger(EqualsTester.class);
 
@@ -28,6 +35,11 @@ class EqualsTester<T> implements Tester {
     }
 
     @Override
+    /**
+     * Tests the equals method for reflexivity, null-safety, and behavior on field changes.
+     *
+     * @return list of results for each scenario tested.
+     */
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {
@@ -74,6 +86,9 @@ class EqualsTester<T> implements Tester {
         return results;
     }
 
+    /**
+     * Internal helper to execute a singular test and wrap it in a TestResult.
+     */
     private TestResult runTest(String className, String component, Runnable test) {
         try {
             test.run();

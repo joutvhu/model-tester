@@ -4,19 +4,55 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
- * Strategy for identifying if a method is a getter or a setter, 
- * and matching fields to their corresponding methods.
+ * Strategy for identifying if a method is a getter or a setter,
+ * and matching methods to their corresponding fields.
+ * This allows the library to support various coding conventions.
  */
 public interface NamingStrategy {
+    /**
+     * Checks if the method is a getter.
+     *
+     * @param method the method to check.
+     * @return true if it looks like a getter.
+     */
     boolean isGetter(Method method);
+
+    /**
+     * Checks if the method is a setter.
+     *
+     * @param method the method to check.
+     * @return true if it looks like a setter.
+     */
     boolean isSetter(Method method);
+
+    /**
+     * Extracts the potential field name from a method name.
+     *
+     * @param method the method to analyze.
+     * @return the inferred field name.
+     */
     String getFieldName(Method method);
+
+    /**
+     * Verifies if a method matches a specific field based on naming conventions.
+     *
+     * @param method the method to match.
+     * @param field the field to match.
+     * @return true if they correspond to each other.
+     */
     boolean matches(Method method, Field field);
 
+    /** Standard POJO naming strategy: getXxx, setXxx, isXxx (booleans). */
     NamingStrategy DEFAULT = new DefaultNamingStrategy();
+    /** Strategy for Java Records: getters match parameter names, no setters. */
     NamingStrategy RECORD = new RecordNamingStrategy();
+    /** Strategy for fluent builders or models: setXxx or xxx() returning 'this'. */
     NamingStrategy FLUENT = new FluentNamingStrategy();
 
+    /**
+     * Default implementation of {@link NamingStrategy} following standard POJO conventions.
+     * Expects "get" and "set" prefixes for most fields, and "is" for boolean getters.
+     */
     class DefaultNamingStrategy implements NamingStrategy {
         @Override
         public boolean isGetter(Method method) {
@@ -53,6 +89,10 @@ public interface NamingStrategy {
         }
     }
 
+    /**
+     * Naming strategy for Java Records.
+     * Getters do not have prefixes, and setters are not supported for records.
+     */
     class RecordNamingStrategy extends DefaultNamingStrategy {
         @Override
         public boolean isGetter(Method method) {
@@ -81,6 +121,10 @@ public interface NamingStrategy {
         }
     }
 
+    /**
+     * Naming strategy supporting fluent setter patterns (chaining).
+     * Setters are identified by having one parameter and returning the object instance.
+     */
     class FluentNamingStrategy extends DefaultNamingStrategy {
         @Override
         public boolean isSetter(Method method) {

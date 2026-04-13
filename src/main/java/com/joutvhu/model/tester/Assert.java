@@ -6,10 +6,21 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
+/**
+ * Internal assertion utility for verifying model state.
+ * Supports deep equality checks for collections, maps, and arrays.
+ */
 @UtilityClass
 class Assert {
     private static final Logger log = LoggerFactory.getLogger(Assert.class);
 
+    /**
+     * Asserts that two objects are equal using deep equality logic.
+     *
+     * @param expected the expected value
+     * @param actual the actual value
+     * @return true if equal, otherwise throws {@link TesterException}
+     */
     public boolean assertEquals(Object expected, Object actual) {
         return assertEquals(expected, actual, null);
     }
@@ -22,10 +33,23 @@ class Assert {
         return true;
     }
 
+    /**
+     * Asserts that an object is not null.
+     *
+     * @param actual the value to check.
+     * @return true if not null, otherwise throws {@link TesterException}.
+     */
     public boolean assertNotNull(Object actual) {
         return assertNotNull(actual, null);
     }
 
+    /**
+     * Asserts that an object is not null with a custom error message.
+     *
+     * @param actual the value to check.
+     * @param message the failure message prefix.
+     * @return true if not null, otherwise throws {@link TesterException}.
+     */
     public boolean assertNotNull(Object actual, String message) {
         if (actual == null) {
             failNull(message);
@@ -38,6 +62,9 @@ class Assert {
         fail(buildPrefix(message) + "expected: not <null>");
     }
 
+    /**
+     * Core equality engine. Handles primitives, arrays, collections, and recursive deep equality.
+     */
     private boolean objectsAreEqual(Object obj1, Object obj2) {
         if (obj1 == obj2) return true;
         if (obj1 == null || obj2 == null) return false;
@@ -117,6 +144,9 @@ class Assert {
         return !isBlank(str);
     }
 
+    /**
+     * Formats the difference between two values for the error message.
+     */
     private String formatValues(Object expected, Object actual) {
         String expectedString = toString(expected);
         String actualString = toString(actual);
@@ -137,7 +167,6 @@ class Assert {
     private String toString(Object obj) {
         return obj instanceof Class ? getCanonicalName((Class) obj) : nullSafeToString(obj);
     }
-
 
     private String toHash(Object obj) {
         return obj == null ? "" : "@" + Integer.toHexString(System.identityHashCode(obj));

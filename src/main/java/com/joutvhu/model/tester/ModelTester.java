@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 /**
  * The main entry point for testing model classes.
- * It provides a fluent API to configure and execute various tests on POJOs, 
- * such as getters/setters, equals, hashCode, and toString.
+ * It provides a fluent API to configure and execute various tests on POJOs,
+ * such as constructors, getters/setters, equals, hashCode, and toString.
  *
  * @param <T> The type of the model class to test.
  */
@@ -24,6 +24,12 @@ public class ModelTester<T> {
     private final List<TestResult> results = new ArrayList<>();
     private NamingStrategy namingStrategy = NamingStrategy.DEFAULT;
 
+    /**
+     * Initializes a ModelTester for the specified domain class.
+     * Throws an exception if the class is an interface.
+     *
+     * @param modelClass the class to be tested.
+     */
     public ModelTester(Class<T> modelClass) {
         int mod = modelClass.getModifiers();
         if (Modifier.isInterface(mod))
@@ -31,29 +37,35 @@ public class ModelTester<T> {
         this.modelClass = modelClass;
     }
 
+    /**
+     * Sets a custom naming strategy for matching fields and methods (e.g., for Java Records or fluent builders).
+     *
+     * @param namingStrategy the naming strategy to use.
+     * @return this instance for chaining.
+     */
     public ModelTester<T> withNamingStrategy(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         return this;
     }
 
     /**
-     * Create a ModelTester for the specified class.
+     * Factory method to create a ModelTester for the specified class.
      *
-     * @param modelClass the class to test
-     * @param <T> type of the model
-     * @return a new ModelTester instance
+     * @param modelClass the class to test.
+     * @param <T> type of the model.
+     * @return a new ModelTester instance.
      */
     public static <T> ModelTester<T> of(Class<T> modelClass) {
         return new ModelTester<>(modelClass);
     }
 
     /**
-     * Create a ModelTester and automatically add all standard tests:
+     * Factory method to create a ModelTester and automatically add all standard tests:
      * constructors, getters/setters, equals, hashCode, and toString.
      *
-     * @param modelClass the class to test
-     * @param <T> type of the model
-     * @return a configured ModelTester instance
+     * @param modelClass the class to test.
+     * @param <T> type of the model.
+     * @return a configured ModelTester instance.
      */
     public static <T> ModelTester<T> allOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
@@ -64,6 +76,15 @@ public class ModelTester<T> {
                 .toStringMethod();
     }
 
+    /**
+     * Factory method to create a ModelTester with "safe" versions of equals, hashCode, and toString.
+     * "Safe" checks verify consistency and null-safety but might avoid deep object comparison
+     * if copy constructor is not available.
+     *
+     * @param modelClass the class to test.
+     * @param <T> type of the model.
+     * @return a configured ModelTester instance with safe tests.
+     */
     public static <T> ModelTester<T> safeOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
                 .constructors()
@@ -74,7 +95,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test all constructors.
+     * Configures the tester to verify all constructors of the model class.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> constructors() {
         for (Creator<T> creatable : Creator.allOf(modelClass)) {
@@ -84,20 +107,31 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test a constructor with parameters.
+     * Configures the tester to verify a constructor using specific parameter values.
+     *
+     * @param parameters raw values to pass to the constructor.
+     * @return this instance for chaining.
      */
     public ModelTester<T> constructor(Object... parameters) {
         testers.add(new ConstructorTester<>(Creator.byParams(modelClass, parameters)));
         return this;
     }
 
+    /**
+     * Configures the tester to verify a constructor using specific {@link Creator} instances for parameters.
+     *
+     * @param parameters creators for construction parameters.
+     * @return this instance for chaining.
+     */
     public ModelTester<T> constructor(Creator<?>... parameters) {
         testers.add(new ConstructorTester<>(Creator.of(modelClass, parameters)));
         return this;
     }
 
     /**
-     * Should test all getter and setter methods.
+     * Configures the tester to verify all getter and setter methods.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> getterSetters() {
         testers.add(new GetterSetterTester<>(modelClass, null, null).withNamingStrategy(namingStrategy));
@@ -105,7 +139,10 @@ public class ModelTester<T> {
     }
 
     /**
-     * Only getters setters are listed.
+     * Configures the tester to verify only specific getter/setter methods or fields.
+     *
+     * @param names names of the methods or fields to include.
+     * @return this instance for chaining.
      */
     public ModelTester<T> include(String... names) {
         testers.add(new GetterSetterTester<>(modelClass, Arrays.asList(names), null).withNamingStrategy(namingStrategy));
@@ -113,7 +150,10 @@ public class ModelTester<T> {
     }
 
     /**
-     * Except for the getter setter methods listed.
+     * Configures the tester to exclude specific getter/setter methods or fields from testing.
+     *
+     * @param names names of the methods or fields to exclude.
+     * @return this instance for chaining.
      */
     public ModelTester<T> exclude(String... names) {
         testers.add(new GetterSetterTester<>(modelClass, null, Arrays.asList(names)).withNamingStrategy(namingStrategy));
@@ -121,7 +161,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test equals() method
+     * Configures the tester to verify the {@link Object#equals(Object)} contract.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> equalsMethod() {
         testers.add(new EqualsTester<>(modelClass));
@@ -129,7 +171,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Test equals() but compare with itself
+     * Configures the tester to verify the {@link Object#equals(Object)} contract in safe mode.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> equalsSafe() {
         testers.add(new EqualsTester<>(modelClass, true));
@@ -137,7 +181,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test hashCode() method
+     * Configures the tester to verify the {@link Object#hashCode()} contract.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> hashCodeMethod() {
         testers.add(new HashCodeTester<>(modelClass));
@@ -145,7 +191,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Test hashCode() but compare with itself
+     * Configures the tester to verify the {@link Object#hashCode()} contract in safe mode.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> hashCodeSafe() {
         testers.add(new HashCodeTester<>(modelClass, true));
@@ -153,7 +201,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Should test toString() method
+     * Configures the tester to verify the {@link Object#toString()} contract.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> toStringMethod() {
         testers.add(new ToStringTester<>(modelClass));
@@ -161,7 +211,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Test toString() but compare with itself
+     * Configures the tester to verify the {@link Object#toString()} contract in safe mode.
+     *
+     * @return this instance for chaining.
      */
     public ModelTester<T> toStringSafe() {
         testers.add(new ToStringTester<>(modelClass, true));
@@ -169,14 +221,9 @@ public class ModelTester<T> {
     }
 
     /**
-     * Start testing
-     *
-     * @return false if there is any error.
-     */
-    /**
      * Executes all configured tests and logs the results.
      *
-     * @return true if all tests passed, false if any test failed or encountered an error.
+     * @return true if all tests passed, false otherwise.
      */
     public boolean test() {
         results.clear();
@@ -195,12 +242,20 @@ public class ModelTester<T> {
         return success;
     }
 
+    /**
+     * Retrieves the results of the executed tests.
+     *
+     * @return a list of {@link TestResult} containing test details.
+     */
     public List<TestResult> getResults() {
         return results;
     }
 
     /**
-     * Start testing and throws Exception if there is any error.
+     * Executes all configured tests and throws a {@link TesterException} if any test fails or errors.
+     * Use this in test suites (e.g., JUnit) to enforce build failures on regressions.
+     *
+     * @throws TesterException if any test fails.
      */
     public void testAndThrows() {
         if (!test()) {

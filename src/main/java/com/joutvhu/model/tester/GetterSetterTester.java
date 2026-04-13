@@ -12,6 +12,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Tester implementation for verifying getter and setter methods.
+ * Supports standard POJOs, Java Records (via {@link NamingStrategy#RECORD}),
+ * and fluent setters (via {@link NamingStrategy#FLUENT}).
+ *
+ * @param <T> the type of model being tested
+ */
 class GetterSetterTester<T> implements Tester {
     private static final Logger log = LoggerFactory.getLogger(GetterSetterTester.class);
 
@@ -26,12 +33,23 @@ class GetterSetterTester<T> implements Tester {
         this.exclude = exclude;
     }
 
+    /**
+     * Configures a custom naming strategy for identifying getters and setters.
+     *
+     * @param namingStrategy the strategy to use.
+     * @return current tester instance.
+     */
     public GetterSetterTester<T> withNamingStrategy(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         return this;
     }
 
     @Override
+    /**
+     * Executes the getter and setter tests for all identified methods in the model class.
+     *
+     * @return list of results for each method tested.
+     */
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

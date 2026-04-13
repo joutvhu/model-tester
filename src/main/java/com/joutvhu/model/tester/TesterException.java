@@ -1,5 +1,8 @@
 package com.joutvhu.model.tester;
 
+/**
+ * Exception thrown when a model test fail or encounters an error.
+ */
 public class TesterException extends RuntimeException {
     public TesterException(String message) {
         super(message);

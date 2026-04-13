@@ -17,6 +17,12 @@ import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.*;
 
+/**
+ * Utility for creating instances of classes, interfaces, and abstracts.
+ * Handles automatic data generation for primitives, collections, and common types.
+ *
+ * @param <T> the type of object to create
+ */
 public class Creator<T> {
     private static final Logger log = LoggerFactory.getLogger(Creator.class);
 
@@ -32,6 +38,13 @@ public class Creator<T> {
         this.values = values;
     }
 
+    /**
+     * Factory method to create a Creator for a specific constructor.
+     *
+     * @param constructor the constructor to use.
+     * @param <T> the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> of(Constructor<T> constructor) {
         List<Creator<?>> parameters = new ArrayList<>();
         for (Class<?> parameterType : constructor.getParameterTypes()) {
@@ -40,14 +53,38 @@ public class Creator<T> {
         return new Creator<>(constructor.getDeclaringClass(), parameters, null, null);
     }
 
+    /**
+     * Factory method to create a Creator for a class and its dependencies.
+     *
+     * @param modelClass the class to create.
+     * @param parameters decorators/creators for construction parameters.
+     * @param <T> the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> of(Class<T> modelClass, Creator<?>... parameters) {
         return new Creator<>(modelClass, Arrays.asList(parameters), null, null);
     }
 
+    /**
+     * Factory method to create a Creator using pre-defined parameter values.
+     *
+     * @param modelClass the class to create.
+     * @param parameters raw parameter values.
+     * @param <T> the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> byParams(Class<T> modelClass, Object... parameters) {
         return new Creator<>(modelClass, null, null, parameters);
     }
 
+    /**
+     * Attempts to create a default Creator for a class by inspecting its constructors
+     * and recursive dependencies.
+     *
+     * @param modelClass the class to analyze.
+     * @param <T> the type of object.
+     * @return a configured Creator instance.
+     */
     public static <T> Creator<T> anyOf(Class<T> modelClass) {
         T result = tryMakeProxy(modelClass);
         if (result != null)
@@ -72,6 +109,13 @@ public class Creator<T> {
         return new Creator<>(modelClass, new ArrayList<>(), null, null);
     }
 
+    /**
+     * Finds all possible ways to create an instance of a class (one for each constructor).
+     *
+     * @param modelClass the class to analyze.
+     * @param <T> the type of object.
+     * @return an array of Creators.
+     */
     public static <T> Creator<T>[] allOf(Class<T> modelClass) {
         ArrayList<Creator<T>> creators = new ArrayList<>();
         if (modelClass.isEnum()) {
@@ -97,6 +141,12 @@ public class Creator<T> {
         return creators.toArray(new Creator[creators.size()]);
     }
 
+    /**
+     * Executes the creation logic according to the configuration.
+     * Handles proxies for interfaces/abstracts and complex instantiation.
+     *
+     * @return a new instance of type T.
+     */
     public T create() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (staticValue != null)
             return staticValue;
@@ -178,6 +228,9 @@ public class Creator<T> {
         });
     }
 
+    /**
+     * Static utility to create an instance using specific Creators.
+     */
     public static <T> T create(Class<T> modelClass, List<Creator<?>> parameters) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] parameterTypes = new Class[parameters.size()];
         Object[] params = new Object[parameters.size()];
@@ -196,6 +249,9 @@ public class Creator<T> {
         return (T) constructor.newInstance(params);
     }
 
+    /**
+     * Static utility to create an instance using raw parameter values.
+     */
     public static <T> T create(Class<T> modelClass, Object... params) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] paramClasses = new Class[params.length];
         for (int i = 0, len = params.length; i < len; i++) {
@@ -215,6 +271,14 @@ public class Creator<T> {
         }
     }
 
+    /**
+     * Creates a shallow copy of an object for mutation testing.
+     * Deeply supports primitive types, enums, and common wrappers by identity.
+     *
+     * @param value the object to copy.
+     * @param <T> the type.
+     * @return a new instance with copied state.
+     */
     public static <T> T makeCopy(T value) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         if (value == null)
             return null;
@@ -252,6 +316,9 @@ public class Creator<T> {
         }
     }
 
+    /**
+     * Checks if a type can hold a null value.
+     */
     public static boolean isNullable(Class<?> modelClass) {
         return modelClass != boolean.class &&
                 modelClass != int.class &&

@@ -3,6 +3,12 @@ package com.joutvhu.model.tester;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tester implementation for verifying the {@link Object#hashCode()} contract.
+ * Verifies that equal objects have equal hash codes and that hash codes are consistent.
+ *
+ * @param <T> the type of model being tested
+ */
 class HashCodeTester<T> implements Tester {
     private final Class<T> modelClass;
     private final boolean safe;
@@ -17,6 +23,11 @@ class HashCodeTester<T> implements Tester {
     }
 
     @Override
+    /**
+     * Verifies that equal objects have consistent hash codes.
+     *
+     * @return list of results for hash code consistency check.
+     */
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

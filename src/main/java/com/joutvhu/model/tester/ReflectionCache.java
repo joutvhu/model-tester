@@ -9,18 +9,23 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Thread-safe cache for reflection data.
- */
-/**
- * Simple cache for reflection metadata (fields and methods) to improve performance.
+ * Simple thread-safe cache for reflection metadata (fields and methods) to improve performance
+ * during intensive model testing.
  */
 public class ReflectionCache {
     private static final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
     private static final Map<Class<?>, Method[]> methodsCache = new ConcurrentHashMap<>();
 
     private ReflectionCache() {
+        // Prevent instantiation
     }
 
+    /**
+     * Retrieves all fields of a class, including private and inherited ones, with caching.
+     *
+     * @param clazz the class to inspect.
+     * @return an array of all discovered {@link Field} objects.
+     */
     public static Field[] getFields(Class<?> clazz) {
         return fieldsCache.computeIfAbsent(clazz, c -> {
             Set<Field> fields = new HashSet<>();
@@ -34,6 +39,12 @@ public class ReflectionCache {
         });
     }
 
+    /**
+     * Retrieves all methods of a class, including private and inherited ones, with caching.
+     *
+     * @param clazz the class to inspect.
+     * @return an array of all discovered {@link Method} objects.
+     */
     public static Method[] getMethods(Class<?> clazz) {
         return methodsCache.computeIfAbsent(clazz, c -> {
             Set<Method> methods = new HashSet<>();
