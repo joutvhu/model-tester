@@ -1,16 +1,27 @@
 # Model Tester
 
-Model Tester is a utility for automatically testing model classes.
+Model Tester is a utility for automatically testing model classes (POJOs, Records, etc.), reducing boilerplate test code.
+
+## Key Features
+
+- **Automated Testing**: One-line testing for constructors, getters/setters, `equals`, `hashCode`, and `toString`.
+- **Modern Java Support**: Works with standard POJOs, Lombok-generated methods, and Java Records.
+- **Deep Equality**: Supports deep comparison for Collections (`List`, `Set`) and `Map` in both equals and getter/setter tests.
+- **Customizable Naming**: Flexibility to handle various naming conventions (e.g., fluent setters, non-standard prefixes).
+- **High Performance**: Built-in metadata cache to significantly speed up reflection-heavy test suites.
+- **Detailed Reporting**: Returns structured `TestResult` objects with specific failure messages for better debugging.
 
 ## Installation
 
-- If you are using Gradle just add the following dependency to your `build.gradle`.
+- If you are using Gradle, add the following dependency to your `build.gradle`:
 
 ```groovy
 testImplementation "com.github.joutvhu:model-tester:1.0.5"
+// Add a binding if you want to see test logs
+testRuntimeOnly "org.slf4j:slf4j-simple:2.0.7"
 ```
 
-- Or add the following dependency to your `pom.xml` if you are using Maven.
+- If you are using Maven, add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
@@ -23,33 +34,21 @@ testImplementation "com.github.joutvhu:model-tester:1.0.5"
 
 ## How to use?
 
-- Provide model class to be used for testing.
-- Set up test options.
-- Use method `test()` or `testAndThrows()` to execute the tester.
-
 ```java
-
 public class UserTest {
     @Test
-    public void test_all() {
+    public void testAll() {
+        // Standard one-liner
         Assertions.assertTrue(ModelTester.allOf(User.class).test());
     }
 
     @Test
-    public void test_and_throws() {
-        ModelTester.allOf(User.class).testAndThrows();
-    }
-
-    @Test
-    public void test_safe() {
-        ModelTester.safeOf(User.class).testAndThrows();
-    }
-
-    @Test
-    public void test_custom() {
+    public void testWithConfiguration() {
         ModelTester.of(User.class)
+                .withNamingStrategy(NamingStrategy.DEFAULT) // Optional
                 .constructors()
-                .exclude("getId", "setId")
+                .getterSetter()
+                .exclude("internalField")
                 .equalsMethod()
                 .hashCodeMethod()
                 .toStringMethod()

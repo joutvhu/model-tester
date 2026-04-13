@@ -11,7 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Thread-safe cache for reflection data.
  */
-class ReflectionCache {
+/**
+ * Simple cache for reflection metadata (fields and methods) to improve performance.
+ */
+public class ReflectionCache {
     private static final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
     private static final Map<Class<?>, Method[]> methodsCache = new ConcurrentHashMap<>();
 

@@ -1,16 +1,19 @@
 package com.joutvhu.model.tester;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+/**
+ * Represents the result of a single test component.
+ */
+@Data
 @Builder
 public class TestResult {
-    private final String className;
-    private final String component;
-    private final TestStatus status;
-    private final String message;
-    private final Throwable error;
+    private String className;
+    private String component;
+    private TestStatus status;
+    private String message;
+    private Throwable error;
 
     @Override
     public String toString() {

@@ -4,7 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
- * Strategy to match methods to fields.
+ * Strategy for identifying if a method is a getter or a setter, 
+ * and matching fields to their corresponding methods.
  */
 public interface NamingStrategy {
     boolean isGetter(Method method);

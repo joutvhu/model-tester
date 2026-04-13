@@ -51,7 +51,9 @@ class EqualsTester<T> implements Tester {
                 results.add(runTest(modelClass.getName(), "equals(copy)", () -> {
                     Assert.assertEquals(model, newModel, "Copy should be equal to original");
                 }));
-                deepTest(model, newModel, results);
+                if (!modelClass.isEnum()) {
+                    deepTest(model, newModel, results);
+                }
             } catch (Throwable x) {
                 if (safe) {
                     deepTest(model, null, results);
@@ -168,6 +170,19 @@ class EqualsTester<T> implements Tester {
             return (byte) ((originalValue != null ? (Byte) originalValue : 0) + 1);
         if (fieldType == short.class || fieldType == Short.class)
             return (short) ((originalValue != null ? (Short) originalValue : 0) + 1);
-        return null;
+        
+        if (fieldType == String.class)
+            return (originalValue != null ? (String) originalValue : "") + "diff";
+        if (java.util.Date.class.isAssignableFrom(fieldType))
+            return new java.util.Date((originalValue != null ? ((java.util.Date) originalValue).getTime() : 0) + 1000);
+        
+        if (java.util.List.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singletonList("diff");
+        if (java.util.Set.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singleton("diff");
+        if (java.util.Map.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singletonMap("diff", "diff");
+
+        return originalValue == null ? new Object() : null;
     }
 }

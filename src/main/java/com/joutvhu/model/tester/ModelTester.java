@@ -9,6 +9,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The main entry point for testing model classes.
+ * It provides a fluent API to configure and execute various tests on POJOs, 
+ * such as getters/setters, equals, hashCode, and toString.
+ *
+ * @param <T> The type of the model class to test.
+ */
 public class ModelTester<T> {
     private static final Logger log = LoggerFactory.getLogger(ModelTester.class);
 
@@ -29,10 +36,25 @@ public class ModelTester<T> {
         return this;
     }
 
+    /**
+     * Create a ModelTester for the specified class.
+     *
+     * @param modelClass the class to test
+     * @param <T> type of the model
+     * @return a new ModelTester instance
+     */
     public static <T> ModelTester<T> of(Class<T> modelClass) {
         return new ModelTester<>(modelClass);
     }
 
+    /**
+     * Create a ModelTester and automatically add all standard tests:
+     * constructors, getters/setters, equals, hashCode, and toString.
+     *
+     * @param modelClass the class to test
+     * @param <T> type of the model
+     * @return a configured ModelTester instance
+     */
     public static <T> ModelTester<T> allOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
                 .constructors()
@@ -150,6 +172,11 @@ public class ModelTester<T> {
      * Start testing
      *
      * @return false if there is any error.
+     */
+    /**
+     * Executes all configured tests and logs the results.
+     *
+     * @return true if all tests passed, false if any test failed or encountered an error.
      */
     public boolean test() {
         results.clear();
