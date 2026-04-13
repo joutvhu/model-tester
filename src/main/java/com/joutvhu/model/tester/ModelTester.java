@@ -15,12 +15,18 @@ public class ModelTester<T> {
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
     private final List<TestResult> results = new ArrayList<>();
+    private NamingStrategy namingStrategy = NamingStrategy.DEFAULT;
 
     public ModelTester(Class<T> modelClass) {
         int mod = modelClass.getModifiers();
         if (Modifier.isInterface(mod))
             throw new TesterException("Can't test an interface.");
         this.modelClass = modelClass;
+    }
+
+    public ModelTester<T> withNamingStrategy(NamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+        return this;
     }
 
     public static <T> ModelTester<T> of(Class<T> modelClass) {
@@ -72,7 +78,7 @@ public class ModelTester<T> {
      * Should test all getter and setter methods.
      */
     public ModelTester<T> getterSetters() {
-        testers.add(new GetterSetterTester<>(modelClass, null, null));
+        testers.add(new GetterSetterTester<>(modelClass, null, null).withNamingStrategy(namingStrategy));
         return this;
     }
 
@@ -80,7 +86,7 @@ public class ModelTester<T> {
      * Only getters setters are listed.
      */
     public ModelTester<T> include(String... names) {
-        testers.add(new GetterSetterTester<>(modelClass, Arrays.asList(names), null));
+        testers.add(new GetterSetterTester<>(modelClass, Arrays.asList(names), null).withNamingStrategy(namingStrategy));
         return this;
     }
 
@@ -88,7 +94,7 @@ public class ModelTester<T> {
      * Except for the getter setter methods listed.
      */
     public ModelTester<T> exclude(String... names) {
-        testers.add(new GetterSetterTester<>(modelClass, null, Arrays.asList(names)));
+        testers.add(new GetterSetterTester<>(modelClass, null, Arrays.asList(names)).withNamingStrategy(namingStrategy));
         return this;
     }
 

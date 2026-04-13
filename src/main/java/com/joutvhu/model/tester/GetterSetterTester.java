@@ -15,14 +15,20 @@ import java.util.Set;
 class GetterSetterTester<T> implements Tester {
     private static final Logger log = LoggerFactory.getLogger(GetterSetterTester.class);
 
-    private Class<T> modelClass;
-    private List<String> include;
-    private List<String> exclude;
+    private final Class<T> modelClass;
+    private final List<String> include;
+    private final List<String> exclude;
+    private NamingStrategy namingStrategy = NamingStrategy.DEFAULT;
 
     GetterSetterTester(Class<T> modelClass, List<String> include, List<String> exclude) {
         this.modelClass = modelClass;
         this.include = include;
         this.exclude = exclude;
+    }
+
+    public GetterSetterTester<T> withNamingStrategy(NamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+        return this;
     }
 
     @Override
@@ -62,7 +68,7 @@ class GetterSetterTester<T> implements Tester {
             else
                 tested.add(method);
 
-            if (isGetter(method)) {
+            if (namingStrategy.isGetter(method)) {
                 Field field = getField(method);
                 if (checkName(method, field)) {
                     if (field != null && method.getReturnType().equals(field.getType()) &&
@@ -73,7 +79,7 @@ class GetterSetterTester<T> implements Tester {
                         results.add(testGetter(model, method));
                     }
                 }
-            } else if (isSetter(method)) {
+            } else if (namingStrategy.isSetter(method)) {
                 Field field = getField(method);
                 if (checkName(method, field)) {
                     if (field != null && method.getParameterTypes()[0].equals(field.getType()) &&
@@ -99,7 +105,7 @@ class GetterSetterTester<T> implements Tester {
     }
 
     private TestResult testGetter(T model, Method method, Field field) {
-        boolean restore = modelClass.isEnum();
+        boolean restore = true;
         Object backup = null;
         try {
             field.setAccessible(true);
@@ -161,7 +167,7 @@ class GetterSetterTester<T> implements Tester {
     }
 
     private TestResult testSetter(T model, Method method, Field field) {
-        boolean restore = modelClass.isEnum();
+        boolean restore = true;
         Object backup = null;
         try {
             field.setAccessible(true);
@@ -172,15 +178,24 @@ class GetterSetterTester<T> implements Tester {
         try {
             Object value = createTestValue(method.getParameterTypes()[0]);
             method.setAccessible(true);
-            method.invoke(model, value);
+            Object setterResult = method.invoke(model, value);
             field.setAccessible(true);
             Object result = field.get(model);
             boolean pass = Assert.assertEquals(value, result);
+            
+            // Fluent setter support
+            if (pass && !method.getReturnType().equals(Void.TYPE)) {
+                if (setterResult != model) {
+                    pass = false;
+                    log.warn("Fluent setter {} did not return 'this' for class {}", method.getName(), modelClass.getName());
+                }
+            }
+
             return TestResult.builder()
                     .className(modelClass.getName())
                     .component(method.getName())
                     .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                    .message(pass ? null : "Value mismatch in field")
+                    .message(pass ? null : "Value mismatch or incorrect return for fluent setter")
                     .build();
         } catch (Throwable e) {
             return TestResult.builder()
@@ -224,35 +239,12 @@ class GetterSetterTester<T> implements Tester {
     }
 
     private Field getField(Method method) {
-        String methodName = method.getName();
-        if (methodName.startsWith("get") || methodName.startsWith("set"))
-            methodName = methodName.substring(3);
-        else if (methodName.startsWith("is"))
-            methodName = methodName.substring(2);
-
         Field[] fields = ReflectionCache.getFields(modelClass);
         for (Field field : fields) {
-            if (methodName.equalsIgnoreCase(field.getName()))
+            if (namingStrategy.matches(method, field))
                 return field;
         }
         return null;
-    }
-
-    private boolean isGetter(Method method) {
-        String methodName = method.getName();
-        if (methodName.length() > 3 && methodName.startsWith("get") && method.getParameterCount() == 0) {
-            return true;
-        }
-        if (methodName.length() > 2 && methodName.startsWith("is") && method.getParameterCount() == 0) {
-            Class<?> returnType = method.getReturnType();
-            return Boolean.class.equals(returnType) || returnType == boolean.class;
-        }
-        return false;
-    }
-
-    private boolean isSetter(Method method) {
-        String methodName = method.getName();
-        return methodName.length() > 3 && methodName.startsWith("set") && method.getParameterCount() == 1;
     }
 
     private boolean checkName(Method method, Field field) {
