@@ -7,13 +7,15 @@ import com.joutvhu.model.tester.domain.ModelC;
 import com.joutvhu.model.tester.domain.ModelD;
 import com.joutvhu.model.tester.domain.ModelE;
 import com.joutvhu.model.tester.domain.ModelF;
+import com.joutvhu.model.tester.domain.ModelFluent;
+import com.joutvhu.model.tester.domain.ModelRecord;
 import com.joutvhu.model.tester.domain.ModelS;
 import org.junit.jupiter.api.Test;
 
 public class ModelTest {
     @Test
     public void test_ModelA() {
-        ModelTester.allOf(ModelA.class).test();
+        ModelTester.allOf(ModelA.class).testAndThrows();
     }
 
     @Test
@@ -49,5 +51,29 @@ public class ModelTest {
     @Test
     public void test_EnumX() {
         ModelTester.allOf(EnumX.class).testAndThrows();
+    }
+
+    @Test
+    public void test_ModelRecord() {
+        ModelTester.of(ModelRecord.class)
+                .withNamingStrategy(NamingStrategy.RECORD)
+                .constructors()
+                .getterSetters()
+                .equalsMethod()
+                .hashCodeMethod()
+                .toStringMethod()
+                .testAndThrows();
+    }
+
+    @Test
+    public void test_ModelFluent() {
+        ModelTester.of(ModelFluent.class)
+                .withNamingStrategy(NamingStrategy.FLUENT)
+                .constructors()
+                .getterSetters()
+                .equalsMethod()
+                .hashCodeMethod()
+                .toStringMethod()
+                .testAndThrows();
     }
 }
