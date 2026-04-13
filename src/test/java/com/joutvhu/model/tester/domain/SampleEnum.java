@@ -34,8 +34,8 @@ public enum SampleEnum {
     @Override
     public String toString() {
         return new StringJoiner(", ", SampleEnum.class.getSimpleName() + "[", "]")
-                .add("id=" + id)
-                .add("label='" + label + "'")
-                .toString();
+            .add("id=" + id)
+            .add("label='" + label + "'")
+            .toString();
     }
 }

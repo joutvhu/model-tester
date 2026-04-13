@@ -36,27 +36,27 @@ class ToStringTester<T> implements Tester {
             if (safe) {
                 boolean pass = Assert.assertEquals(model.toString(), model.toString());
                 results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("toString(itself)")
-                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                        .build());
+                    .className(modelClass.getName())
+                    .component("toString(itself)")
+                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
             } else {
                 T newModel = Creator.makeCopy(model);
                 boolean pass = Assert.assertEquals(model.toString(), newModel.toString());
                 results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("toString(copy)")
-                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                        .build());
+                    .className(modelClass.getName())
+                    .component("toString(copy)")
+                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
             }
         } catch (Throwable e) {
             results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("toString")
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build());
+                .className(modelClass.getName())
+                .component("toString")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
         return results;
     }

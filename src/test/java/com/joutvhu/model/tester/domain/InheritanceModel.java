@@ -63,8 +63,8 @@ public class InheritanceModel extends AbstractMapModel {
     @Override
     public String toString() {
         return "InheritanceModel{" +
-                "count=" + count +
-                ", amount=" + amount +
-                "} " + super.toString();
+            "count=" + count +
+            ", amount=" + amount +
+            "} " + super.toString();
     }
 }

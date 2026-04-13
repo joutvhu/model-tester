@@ -79,11 +79,11 @@ public class NestedListModel {
     @Override
     public String toString() {
         return "NestedListModel{" +
-                "info=" + info +
-                ", score=" + score +
-                ", timestamp=" + timestamp +
-                ", ratio=" + ratio +
-                ", tags=" + tags +
-                '}';
+            "info=" + info +
+            ", score=" + score +
+            ", timestamp=" + timestamp +
+            ", ratio=" + ratio +
+            ", tags=" + tags +
+            '}';
     }
 }

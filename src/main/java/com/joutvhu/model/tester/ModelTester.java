@@ -7,7 +7,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * The main entry point for testing model classes.
@@ -52,7 +51,7 @@ public class ModelTester<T> {
      * Factory method to create a ModelTester for the specified class.
      *
      * @param modelClass the class to test.
-     * @param <T> type of the model.
+     * @param <T>        type of the model.
      * @return a new ModelTester instance.
      */
     public static <T> ModelTester<T> of(Class<T> modelClass) {
@@ -64,16 +63,16 @@ public class ModelTester<T> {
      * constructors, getters/setters, equals, hashCode, and toString.
      *
      * @param modelClass the class to test.
-     * @param <T> type of the model.
+     * @param <T>        type of the model.
      * @return a configured ModelTester instance.
      */
     public static <T> ModelTester<T> allOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
-                .constructors()
-                .getterSetters()
-                .equalsMethod()
-                .hashCodeMethod()
-                .toStringMethod();
+            .constructors()
+            .getterSetters()
+            .equalsMethod()
+            .hashCodeMethod()
+            .toStringMethod();
     }
 
     /**
@@ -82,16 +81,16 @@ public class ModelTester<T> {
      * if copy constructor is not available.
      *
      * @param modelClass the class to test.
-     * @param <T> type of the model.
+     * @param <T>        type of the model.
      * @return a configured ModelTester instance with safe tests.
      */
     public static <T> ModelTester<T> safeOf(Class<T> modelClass) {
         return new ModelTester<>(modelClass)
-                .constructors()
-                .getterSetters()
-                .equalsSafe()
-                .hashCodeSafe()
-                .toStringSafe();
+            .constructors()
+            .getterSetters()
+            .equalsSafe()
+            .hashCodeSafe()
+            .toStringSafe();
     }
 
     /**
@@ -236,8 +235,8 @@ public class ModelTester<T> {
         } else {
             log.error("Test failed for class <{}>", modelClass.getName());
             results.stream()
-                    .filter(r -> r.getStatus() != TestStatus.PASS)
-                    .forEach(r -> log.error("  - {}", r));
+                .filter(r -> r.getStatus() != TestStatus.PASS)
+                .forEach(r -> log.error("  - {}", r));
         }
         return success;
     }

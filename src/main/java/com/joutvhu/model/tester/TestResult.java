@@ -10,15 +10,25 @@ import lombok.Data;
 @Data
 @Builder
 public class TestResult {
-    /** The simple or full name of the class under test. */
+    /**
+     * The simple or full name of the class under test.
+     */
     private String className;
-    /** The specific component being tested (e.g., "setFirstName", "equals"). */
+    /**
+     * The specific component being tested (e.g., "setFirstName", "equals").
+     */
     private String component;
-    /** The outcome of the test (PASS, FAIL, ERROR). */
+    /**
+     * The outcome of the test (PASS, FAIL, ERROR).
+     */
     private TestStatus status;
-    /** A human-readable message explaining a failure or error. */
+    /**
+     * A human-readable message explaining a failure or error.
+     */
     private String message;
-    /** The exception encountered if the test status is ERROR. */
+    /**
+     * The exception encountered if the test status is ERROR.
+     */
     private Throwable error;
 
     @Override

@@ -56,24 +56,24 @@ public class ModelTest {
     @Test
     public void test_ModelRecord() {
         ModelTester.of(ModelRecord.class)
-                .withNamingStrategy(NamingStrategy.RECORD)
-                .constructors()
-                .getterSetters()
-                .equalsMethod()
-                .hashCodeMethod()
-                .toStringMethod()
-                .testAndThrows();
+            .withNamingStrategy(NamingStrategy.RECORD)
+            .constructors()
+            .getterSetters()
+            .equalsMethod()
+            .hashCodeMethod()
+            .toStringMethod()
+            .testAndThrows();
     }
 
     @Test
     public void test_ModelFluent() {
         ModelTester.of(ModelFluent.class)
-                .withNamingStrategy(NamingStrategy.FLUENT)
-                .constructors()
-                .getterSetters()
-                .equalsMethod()
-                .hashCodeMethod()
-                .toStringMethod()
-                .testAndThrows();
+            .withNamingStrategy(NamingStrategy.FLUENT)
+            .constructors()
+            .getterSetters()
+            .equalsMethod()
+            .hashCodeMethod()
+            .toStringMethod()
+            .testAndThrows();
     }
 }

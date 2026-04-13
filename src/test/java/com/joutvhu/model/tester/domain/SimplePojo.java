@@ -67,10 +67,10 @@ public class SimplePojo {
     @Override
     public String toString() {
         return "SimplePojo{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                ", id=" + id +
-                ", birthday=" + birthday +
-                '}';
+            "name='" + name + '\'' +
+            ", age=" + age +
+            ", id=" + id +
+            ", birthday=" + birthday +
+            '}';
     }
 }

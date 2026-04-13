@@ -27,18 +27,18 @@ class ConstructorTester<T> implements Tester {
             T result = creatable.create();
             boolean pass = Assert.assertNotNull(result);
             results.add(TestResult.builder()
-                    .className(creatable.modelClass.getName())
-                    .component("Constructor(" + params() + ")")
-                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                    .build());
+                .className(creatable.modelClass.getName())
+                .component("Constructor(" + params() + ")")
+                .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                .build());
         } catch (Throwable e) {
             results.add(TestResult.builder()
-                    .className(creatable.modelClass.getName())
-                    .component("Constructor(" + params() + ")")
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build());
+                .className(creatable.modelClass.getName())
+                .component("Constructor(" + params() + ")")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
         return results;
     }

@@ -18,7 +18,7 @@ class Assert {
      * Asserts that two objects are equal using deep equality logic.
      *
      * @param expected the expected value
-     * @param actual the actual value
+     * @param actual   the actual value
      * @return true if equal, otherwise throws {@link TesterException}
      */
     public boolean assertEquals(Object expected, Object actual) {
@@ -46,7 +46,7 @@ class Assert {
     /**
      * Asserts that an object is not null with a custom error message.
      *
-     * @param actual the value to check.
+     * @param actual  the value to check.
      * @param message the failure message prefix.
      * @return true if not null, otherwise throws {@link TesterException}.
      */
@@ -68,15 +68,15 @@ class Assert {
     private boolean objectsAreEqual(Object obj1, Object obj2) {
         if (obj1 == obj2) return true;
         if (obj1 == null || obj2 == null) return false;
-        
+
         if (obj1.getClass().isArray() && obj2.getClass().isArray()) {
             return arraysAreEqual(obj1, obj2);
         }
-        
+
         if (obj1 instanceof Iterable && obj2 instanceof Iterable) {
             return iterablesAreEqual((Iterable<?>) obj1, (Iterable<?>) obj2);
         }
-        
+
         if (obj1 instanceof java.util.Map && obj2 instanceof java.util.Map) {
             return mapsAreEqual((java.util.Map<?, ?>) obj1, (java.util.Map<?, ?>) obj2);
         }
@@ -151,8 +151,8 @@ class Assert {
         String expectedString = toString(expected);
         String actualString = toString(actual);
         return expectedString.equals(actualString) ?
-                String.format("expected: %s but was: %s", formatClassAndValue(expected, expectedString), formatClassAndValue(actual, actualString)) :
-                String.format("expected: <%s> but was: <%s>", expectedString, actualString);
+            String.format("expected: %s but was: %s", formatClassAndValue(expected, expectedString), formatClassAndValue(actual, actualString)) :
+            String.format("expected: <%s> but was: <%s>", expectedString, actualString);
     }
 
     private String formatClassAndValue(Object value, String valueString) {

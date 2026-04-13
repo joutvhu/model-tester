@@ -75,10 +75,10 @@ public abstract class AbstractMapModel {
     @Override
     public String toString() {
         return "AbstractMapModel{" +
-                "options=" + Arrays.toString(options) +
-                ", itemMap=" + itemMap +
-                ", symbol=" + symbol +
-                ", errorCode=" + errorCode +
-                '}';
+            "options=" + Arrays.toString(options) +
+            ", itemMap=" + itemMap +
+            ", symbol=" + symbol +
+            ", errorCode=" + errorCode +
+            '}';
     }
 }

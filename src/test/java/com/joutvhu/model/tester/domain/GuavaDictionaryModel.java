@@ -39,9 +39,9 @@ public class GuavaDictionaryModel {
     @Override
     public String toString() {
         return com.google.common.base.MoreObjects.toStringHelper(this)
-                .add("properties", properties)
-                .add("state", state)
-                .toString();
+            .add("properties", properties)
+            .add("state", state)
+            .toString();
     }
 
     public enum NestedEnum {

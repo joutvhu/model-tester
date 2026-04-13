@@ -1,9 +1,8 @@
 package com.joutvhu.model.tester;
 
+import javassist.util.proxy.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javassist.util.proxy.ProxyFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -42,7 +41,7 @@ public class Creator<T> {
      * Factory method to create a Creator for a specific constructor.
      *
      * @param constructor the constructor to use.
-     * @param <T> the type of object.
+     * @param <T>         the type of object.
      * @return a new Creator instance.
      */
     public static <T> Creator<T> of(Constructor<T> constructor) {
@@ -58,7 +57,7 @@ public class Creator<T> {
      *
      * @param modelClass the class to create.
      * @param parameters decorators/creators for construction parameters.
-     * @param <T> the type of object.
+     * @param <T>        the type of object.
      * @return a new Creator instance.
      */
     public static <T> Creator<T> of(Class<T> modelClass, Creator<?>... parameters) {
@@ -70,7 +69,7 @@ public class Creator<T> {
      *
      * @param modelClass the class to create.
      * @param parameters raw parameter values.
-     * @param <T> the type of object.
+     * @param <T>        the type of object.
      * @return a new Creator instance.
      */
     public static <T> Creator<T> byParams(Class<T> modelClass, Object... parameters) {
@@ -82,7 +81,7 @@ public class Creator<T> {
      * and recursive dependencies.
      *
      * @param modelClass the class to analyze.
-     * @param <T> the type of object.
+     * @param <T>        the type of object.
      * @return a configured Creator instance.
      */
     public static <T> Creator<T> anyOf(Class<T> modelClass) {
@@ -113,7 +112,7 @@ public class Creator<T> {
      * Finds all possible ways to create an instance of a class (one for each constructor).
      *
      * @param modelClass the class to analyze.
-     * @param <T> the type of object.
+     * @param <T>        the type of object.
      * @return an array of Creators.
      */
     public static <T> Creator<T>[] allOf(Class<T> modelClass) {
@@ -276,7 +275,7 @@ public class Creator<T> {
      * Deeply supports primitive types, enums, and common wrappers by identity.
      *
      * @param value the object to copy.
-     * @param <T> the type.
+     * @param <T>   the type.
      * @return a new instance with copied state.
      */
     public static <T> T makeCopy(T value) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
@@ -284,17 +283,17 @@ public class Creator<T> {
             return null;
         Class<T> modelClass = (Class<T>) value.getClass();
         if (String.class.equals(modelClass) ||
-                Boolean.class.equals(modelClass) || modelClass == boolean.class ||
-                Integer.class.equals(modelClass) || modelClass == int.class ||
-                Long.class.equals(modelClass) || modelClass == long.class ||
-                Float.class.equals(modelClass) || modelClass == float.class ||
-                Double.class.equals(modelClass) || modelClass == double.class ||
-                Character.class.equals(modelClass) || modelClass == char.class ||
-                Byte.class.equals(modelClass) || modelClass == byte.class ||
-                Short.class.equals(modelClass) || modelClass == short.class ||
-                BigInteger.class.equals(modelClass) ||
-                BigDecimal.class.equals(modelClass) ||
-                modelClass.isEnum())
+            Boolean.class.equals(modelClass) || modelClass == boolean.class ||
+            Integer.class.equals(modelClass) || modelClass == int.class ||
+            Long.class.equals(modelClass) || modelClass == long.class ||
+            Float.class.equals(modelClass) || modelClass == float.class ||
+            Double.class.equals(modelClass) || modelClass == double.class ||
+            Character.class.equals(modelClass) || modelClass == char.class ||
+            Byte.class.equals(modelClass) || modelClass == byte.class ||
+            Short.class.equals(modelClass) || modelClass == short.class ||
+            BigInteger.class.equals(modelClass) ||
+            BigDecimal.class.equals(modelClass) ||
+            modelClass.isEnum())
             return value;
         T newValue = anyOf(modelClass).create();
         if (value instanceof Map) {
@@ -321,13 +320,13 @@ public class Creator<T> {
      */
     public static boolean isNullable(Class<?> modelClass) {
         return modelClass != boolean.class &&
-                modelClass != int.class &&
-                modelClass != long.class &&
-                modelClass != float.class &&
-                modelClass != double.class &&
-                modelClass != char.class &&
-                modelClass != byte.class &&
-                modelClass != short.class;
+            modelClass != int.class &&
+            modelClass != long.class &&
+            modelClass != float.class &&
+            modelClass != double.class &&
+            modelClass != char.class &&
+            modelClass != byte.class &&
+            modelClass != short.class;
     }
 
     private static <T> T makeProxy(Class<T> modelClass) {

@@ -55,30 +55,30 @@ public class CommonsLangModel {
         CommonsLangModel that = (CommonsLangModel) o;
 
         return new EqualsBuilder()
-                .append(code, that.code)
-                .append(type, that.type)
-                .append(value, that.value)
-                .append(status, that.status)
-                .isEquals();
+            .append(code, that.code)
+            .append(type, that.type)
+            .append(value, that.value)
+            .append(status, that.status)
+            .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(code)
-                .append(type)
-                .append(value)
-                .append(status)
-                .toHashCode();
+            .append(code)
+            .append(type)
+            .append(value)
+            .append(status)
+            .toHashCode();
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("code", code)
-                .append("type", type)
-                .append("value", value)
-                .append("status", status)
-                .toString();
+            .append("code", code)
+            .append("type", type)
+            .append("value", value)
+            .append("status", status)
+            .toString();
     }
 }

@@ -37,16 +37,22 @@ public interface NamingStrategy {
      * Verifies if a method matches a specific field based on naming conventions.
      *
      * @param method the method to match.
-     * @param field the field to match.
+     * @param field  the field to match.
      * @return true if they correspond to each other.
      */
     boolean matches(Method method, Field field);
 
-    /** Standard POJO naming strategy: getXxx, setXxx, isXxx (booleans). */
+    /**
+     * Standard POJO naming strategy: getXxx, setXxx, isXxx (booleans).
+     */
     NamingStrategy DEFAULT = new DefaultNamingStrategy();
-    /** Strategy for Java Records: getters match parameter names, no setters. */
+    /**
+     * Strategy for Java Records: getters match parameter names, no setters.
+     */
     NamingStrategy RECORD = new RecordNamingStrategy();
-    /** Strategy for fluent builders or models: setXxx or xxx() returning 'this'. */
+    /**
+     * Strategy for fluent builders or models: setXxx or xxx() returning 'this'.
+     */
     NamingStrategy FLUENT = new FluentNamingStrategy();
 
     /**
@@ -59,7 +65,7 @@ public interface NamingStrategy {
             String name = method.getName();
             int params = method.getParameterCount();
             if (params != 0) return false;
-            
+
             if (name.length() > 3 && name.startsWith("get")) return true;
             if (name.length() > 2 && name.startsWith("is")) {
                 Class<?> rt = method.getReturnType();
@@ -101,10 +107,11 @@ public interface NamingStrategy {
                 Class<?> clazz = method.getDeclaringClass();
                 Method isRecord = Class.class.getMethod("isRecord");
                 if ((Boolean) isRecord.invoke(clazz)) {
-                    return method.getParameterCount() == 0 && !method.getName().equals("toString") && 
-                           !method.getName().equals("hashCode") && !method.getName().equals("getClass");
+                    return method.getParameterCount() == 0 && !method.getName().equals("toString") &&
+                        !method.getName().equals("hashCode") && !method.getName().equals("getClass");
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             return false;
         }
 

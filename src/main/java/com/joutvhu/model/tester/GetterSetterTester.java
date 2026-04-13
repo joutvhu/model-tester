@@ -56,11 +56,11 @@ class GetterSetterTester<T> implements Tester {
             T model = Creator.anyOf(modelClass).create();
             if (model == null) {
                 results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("Instantiation")
-                        .status(TestStatus.FAIL)
-                        .message("Could not instantiate model")
-                        .build());
+                    .className(modelClass.getName())
+                    .component("Instantiation")
+                    .status(TestStatus.FAIL)
+                    .message("Could not instantiate model")
+                    .build());
                 return results;
             }
 
@@ -69,12 +69,12 @@ class GetterSetterTester<T> implements Tester {
         } catch (Throwable e) {
             log.error("Error during getter/setter testing for {}", modelClass.getName(), e);
             results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("GetterSetter")
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build());
+                .className(modelClass.getName())
+                .component("GetterSetter")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
         return results;
     }
@@ -90,8 +90,8 @@ class GetterSetterTester<T> implements Tester {
                 Field field = getField(method);
                 if (checkName(method, field)) {
                     if (field != null && method.getReturnType().equals(field.getType()) &&
-                            !Modifier.isFinal(field.getModifiers()) &&
-                            !Modifier.isStatic(field.getModifiers())) {
+                        !Modifier.isFinal(field.getModifiers()) &&
+                        !Modifier.isStatic(field.getModifiers())) {
                         results.add(testGetter(model, method, field));
                     } else {
                         results.add(testGetter(model, method));
@@ -101,8 +101,8 @@ class GetterSetterTester<T> implements Tester {
                 Field field = getField(method);
                 if (checkName(method, field)) {
                     if (field != null && method.getParameterTypes()[0].equals(field.getType()) &&
-                            !Modifier.isFinal(field.getModifiers()) &&
-                            !Modifier.isStatic(field.getModifiers())) {
+                        !Modifier.isFinal(field.getModifiers()) &&
+                        !Modifier.isStatic(field.getModifiers())) {
                         results.add(testSetter(model, method, field));
                     } else {
                         results.add(testSetter(model, method));
@@ -139,26 +139,26 @@ class GetterSetterTester<T> implements Tester {
             Object result = method.invoke(model);
             boolean pass = Assert.assertEquals(value, result);
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                    .message(pass ? null : "Value mismatch")
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                .message(pass ? null : "Value mismatch")
+                .build();
         } catch (TesterException e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.FAIL)
-                    .message(e.getMessage())
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.FAIL)
+                .message(e.getMessage())
+                .build();
         } catch (Throwable e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
         } finally {
             if (restore) {
                 try {
@@ -176,18 +176,18 @@ class GetterSetterTester<T> implements Tester {
             method.setAccessible(true);
             method.invoke(model);
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.PASS)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.PASS)
+                .build();
         } catch (Throwable e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
         }
     }
 
@@ -207,7 +207,7 @@ class GetterSetterTester<T> implements Tester {
             field.setAccessible(true);
             Object result = field.get(model);
             boolean pass = Assert.assertEquals(value, result);
-            
+
             // Fluent setter support
             if (pass && !method.getReturnType().equals(Void.TYPE)) {
                 if (setterResult != model) {
@@ -217,26 +217,26 @@ class GetterSetterTester<T> implements Tester {
             }
 
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                    .message(pass ? null : "Value mismatch or incorrect return for fluent setter")
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                .message(pass ? null : "Value mismatch or incorrect return for fluent setter")
+                .build();
         } catch (TesterException e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.FAIL)
-                    .message(e.getMessage())
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.FAIL)
+                .message(e.getMessage())
+                .build();
         } catch (Throwable e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
         } finally {
             if (restore) {
                 try {
@@ -255,18 +255,18 @@ class GetterSetterTester<T> implements Tester {
             method.setAccessible(true);
             method.invoke(model, value);
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.PASS)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.PASS)
+                .build();
         } catch (Throwable e) {
             return TestResult.builder()
-                    .className(modelClass.getName())
-                    .component(method.getName())
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build();
+                .className(modelClass.getName())
+                .component(method.getName())
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
         }
     }
 

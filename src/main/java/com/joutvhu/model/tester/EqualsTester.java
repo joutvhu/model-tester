@@ -76,12 +76,12 @@ class EqualsTester<T> implements Tester {
         } catch (Throwable e) {
             log.error("Error during equals testing for {}", modelClass.getName(), e);
             results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("equals")
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build());
+                .className(modelClass.getName())
+                .component("equals")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
         return results;
     }
@@ -93,25 +93,25 @@ class EqualsTester<T> implements Tester {
         try {
             test.run();
             return TestResult.builder()
-                    .className(className)
-                    .component(component)
-                    .status(TestStatus.PASS)
-                    .build();
+                .className(className)
+                .component(component)
+                .status(TestStatus.PASS)
+                .build();
         } catch (TesterException e) {
             return TestResult.builder()
-                    .className(className)
-                    .component(component)
-                    .status(TestStatus.FAIL)
-                    .message(e.getMessage())
-                    .build();
+                .className(className)
+                .component(component)
+                .status(TestStatus.FAIL)
+                .message(e.getMessage())
+                .build();
         } catch (Throwable e) {
             return TestResult.builder()
-                    .className(className)
-                    .component(component)
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build();
+                .className(className)
+                .component(component)
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
         }
     }
 
@@ -134,12 +134,12 @@ class EqualsTester<T> implements Tester {
                 if (!tested.contains(field) && !Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
                     tested.add(field);
                     field.setAccessible(true);
-                    
+
                     Object originalValue = field.get(model);
                     if (restore) {
                         backup.put(field, originalValue);
                     }
-                    
+
                     Object newValue = createDifferentValue(field.getType(), originalValue);
                     field.set(newModel, newValue);
 
@@ -185,12 +185,12 @@ class EqualsTester<T> implements Tester {
             return (byte) ((originalValue != null ? (Byte) originalValue : 0) + 1);
         if (fieldType == short.class || fieldType == Short.class)
             return (short) ((originalValue != null ? (Short) originalValue : 0) + 1);
-        
+
         if (fieldType == String.class)
             return (originalValue != null ? (String) originalValue : "") + "diff";
         if (java.util.Date.class.isAssignableFrom(fieldType))
             return new java.util.Date((originalValue != null ? ((java.util.Date) originalValue).getTime() : 0) + 1000);
-        
+
         if (java.util.List.class.isAssignableFrom(fieldType))
             return java.util.Collections.singletonList("diff");
         if (java.util.Set.class.isAssignableFrom(fieldType))

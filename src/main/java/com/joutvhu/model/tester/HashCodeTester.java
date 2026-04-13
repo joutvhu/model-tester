@@ -35,27 +35,27 @@ class HashCodeTester<T> implements Tester {
             if (safe) {
                 boolean pass = Assert.assertEquals(model.hashCode(), model.hashCode());
                 results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("hashCode(itself)")
-                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                        .build());
+                    .className(modelClass.getName())
+                    .component("hashCode(itself)")
+                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
             } else {
                 T newModel = Creator.makeCopy(model);
                 boolean pass = Assert.assertEquals(model.hashCode(), newModel.hashCode());
                 results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("hashCode(copy)")
-                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
-                        .build());
+                    .className(modelClass.getName())
+                    .component("hashCode(copy)")
+                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
             }
         } catch (Throwable e) {
             results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("hashCode")
-                    .status(TestStatus.ERROR)
-                    .message(e.getMessage())
-                    .error(e)
-                    .build());
+                .className(modelClass.getName())
+                .component("hashCode")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
         return results;
     }
