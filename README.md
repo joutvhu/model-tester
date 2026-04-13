@@ -22,7 +22,7 @@ Model Tester is a robust Java utility designed to eliminate boilerplate code whe
 
 ### Gradle
 ```groovy
-testImplementation "com.github.joutvhu:model-tester:1.0.5"
+testImplementation "com.github.joutvhu:model-tester:1.1.0"
 // Recommended: add an SLF4J binding for test logs
 testRuntimeOnly "org.slf4j:slf4j-simple:2.0.7"
 ```
@@ -32,7 +32,7 @@ testRuntimeOnly "org.slf4j:slf4j-simple:2.0.7"
 <dependency>
     <groupId>com.github.joutvhu</groupId>
     <artifactId>model-tester</artifactId>
-    <version>1.0.5</version>
+    <version>1.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
