@@ -2,17 +2,17 @@ package com.joutvhu.model.tester.domain;
 
 import java.util.StringJoiner;
 
-public enum EnumX {
+public enum SampleEnum {
     TEST0(0, "Test 0"),
     TEST1(1, "Test 1"),
     TEST2(2, "Test 2");
 
     private int id;
-    private String name;
+    private String label;
 
-    EnumX(int id, String name) {
+    SampleEnum(int id, String label) {
         this.id = id;
-        this.name = name;
+        this.label = label;
     }
 
     public int getId() {
@@ -23,19 +23,19 @@ public enum EnumX {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", EnumX.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", SampleEnum.class.getSimpleName() + "[", "]")
                 .add("id=" + id)
-                .add("name='" + name + "'")
+                .add("label='" + label + "'")
                 .toString();
     }
 }
