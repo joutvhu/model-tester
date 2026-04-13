@@ -145,6 +145,10 @@ public class Creator<T> {
      * Handles proxies for interfaces/abstracts and complex instantiation.
      *
      * @return a new instance of type T.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
      */
     public T create() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (staticValue != null)
@@ -229,6 +233,15 @@ public class Creator<T> {
 
     /**
      * Static utility to create an instance using specific Creators.
+     *
+     * @param <T>        the type of the model to create.
+     * @param modelClass the class of the model.
+     * @param parameters the list of creators for the constructor parameters.
+     * @return a new instance of modelClass.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
      */
     public static <T> T create(Class<T> modelClass, List<Creator<?>> parameters) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] parameterTypes = new Class[parameters.size()];
@@ -250,6 +263,15 @@ public class Creator<T> {
 
     /**
      * Static utility to create an instance using raw parameter values.
+     *
+     * @param <T>        the type of the model to create.
+     * @param modelClass the class of the model.
+     * @param params     the raw parameter values for the constructor.
+     * @return a new instance of modelClass.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
      */
     public static <T> T create(Class<T> modelClass, Object... params) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] paramClasses = new Class[params.length];
@@ -277,6 +299,10 @@ public class Creator<T> {
      * @param value the object to copy.
      * @param <T>   the type.
      * @return a new instance with copied state.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
      */
     public static <T> T makeCopy(T value) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         if (value == null)
@@ -317,6 +343,9 @@ public class Creator<T> {
 
     /**
      * Checks if a type can hold a null value.
+     *
+     * @param modelClass the class to check.
+     * @return true if the type is nullable, false for primitives.
      */
     public static boolean isNullable(Class<?> modelClass) {
         return modelClass != boolean.class &&
