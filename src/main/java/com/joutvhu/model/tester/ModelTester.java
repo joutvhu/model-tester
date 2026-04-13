@@ -1,13 +1,20 @@
 package com.joutvhu.model.tester;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ModelTester<T> {
+    private static final Logger log = LoggerFactory.getLogger(ModelTester.class);
+
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
+    private final List<TestResult> results = new ArrayList<>();
 
     public ModelTester(Class<T> modelClass) {
         int mod = modelClass.getModifiers();
@@ -139,12 +146,24 @@ public class ModelTester<T> {
      * @return false if there is any error.
      */
     public boolean test() {
-        boolean success = true;
+        results.clear();
         for (Tester tester : testers) {
-            boolean result = tester.test();
-            if (success) success = result;
+            results.addAll(tester.test());
+        }
+        boolean success = results.stream().allMatch(r -> r.getStatus() == TestStatus.PASS);
+        if (success) {
+            log.info("Test passed for class <{}>", modelClass.getName());
+        } else {
+            log.error("Test failed for class <{}>", modelClass.getName());
+            results.stream()
+                    .filter(r -> r.getStatus() != TestStatus.PASS)
+                    .forEach(r -> log.error("  - {}", r));
         }
         return success;
+    }
+
+    public List<TestResult> getResults() {
+        return results;
     }
 
     /**

@@ -1,5 +1,8 @@
 package com.joutvhu.model.tester;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javassist.util.proxy.ProxyFactory;
 
 import java.lang.reflect.Array;
@@ -15,6 +18,8 @@ import java.time.temporal.Temporal;
 import java.util.*;
 
 public class Creator<T> {
+    private static final Logger log = LoggerFactory.getLogger(Creator.class);
+
     final Class<T> modelClass;
     final List<Creator<?>> parameters;
     final Object[] values;
@@ -205,7 +210,7 @@ public class Creator<T> {
         try {
             return makeProxy(modelClass);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("Failed to make proxy for {}", modelClass.getName(), e);
             return null;
         }
     }
@@ -233,12 +238,7 @@ public class Creator<T> {
         } else if (value instanceof Collection) {
             ((Collection) newValue).addAll((Collection) value);
         } else if (newValue != null) {
-            Class<?> clazz = modelClass;
-            do {
-                copyFields(modelClass.getDeclaredFields(), value, newValue);
-                copyFields(modelClass.getFields(), value, newValue);
-                clazz = clazz.getSuperclass();
-            } while (clazz != null && !Object.class.equals(clazz));
+            copyFields(ReflectionCache.getFields(modelClass), value, newValue);
         }
         return newValue;
     }

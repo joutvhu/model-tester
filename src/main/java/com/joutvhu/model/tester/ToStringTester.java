@@ -1,5 +1,8 @@
 package com.joutvhu.model.tester;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class ToStringTester<T> implements Tester {
     private final Class<T> modelClass;
     private final boolean safe;
@@ -14,25 +17,35 @@ class ToStringTester<T> implements Tester {
     }
 
     @Override
-    public boolean test() {
+    public List<TestResult> test() {
+        List<TestResult> results = new ArrayList<>();
         try {
             T model = Creator.anyOf(modelClass).create();
-            boolean success = true;
             if (safe) {
-                success = Assert.assertEquals(model.toString(), model.toString());
+                boolean pass = Assert.assertEquals(model.toString(), model.toString());
+                results.add(TestResult.builder()
+                        .className(modelClass.getName())
+                        .component("toString(itself)")
+                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                        .build());
             } else {
                 T newModel = Creator.makeCopy(model);
-                success = Assert.assertEquals(model.toString(), newModel.toString());
+                boolean pass = Assert.assertEquals(model.toString(), newModel.toString());
+                results.add(TestResult.builder()
+                        .className(modelClass.getName())
+                        .component("toString(copy)")
+                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                        .build());
             }
-            if (success)
-                System.out.println("Success: " + modelClass.getName() + ".toString()");
-            else
-                System.err.println("Failure: " + modelClass.getName() + ".toString()");
-            return success;
         } catch (Throwable e) {
-            System.err.println("Error: " + modelClass.getName() + ".toString()");
-            e.printStackTrace();
+            results.add(TestResult.builder()
+                    .className(modelClass.getName())
+                    .component("toString")
+                    .status(TestStatus.ERROR)
+                    .message(e.getMessage())
+                    .error(e)
+                    .build());
         }
-        return false;
+        return results;
     }
 }

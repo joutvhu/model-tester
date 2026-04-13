@@ -1,0 +1,6 @@
+# Secrets
+gradle.properties
+secrets/
+
+# IDE
+.idea/

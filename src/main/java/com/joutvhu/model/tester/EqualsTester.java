@@ -1,13 +1,20 @@
 package com.joutvhu.model.tester;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 class EqualsTester<T> implements Tester {
+    private static final Logger log = LoggerFactory.getLogger(EqualsTester.class);
+
     private final Class<T> modelClass;
     private final boolean safe;
 
@@ -21,48 +28,64 @@ class EqualsTester<T> implements Tester {
     }
 
     @Override
-    public boolean test() {
+    public List<TestResult> test() {
+        List<TestResult> results = new ArrayList<>();
         try {
             T model = Creator.anyOf(modelClass).create();
             // Check with itself
-            boolean success = Assert.assertEquals(model, model);
+            results.add(TestResult.builder()
+                    .className(modelClass.getName())
+                    .component("equals(itself)")
+                    .status(Assert.assertEquals(model, model) ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
+
             // Check equals(null)
-            success = model != null && !model.equals(null) && success;
+            results.add(TestResult.builder()
+                    .className(modelClass.getName())
+                    .component("equals(null)")
+                    .status((model != null && !model.equals(null)) ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
+
             try {
                 T newModel = Creator.makeCopy(model);
-                success = Assert.assertEquals(model, newModel) && success;
-                deepTest(model, newModel);
+                results.add(TestResult.builder()
+                        .className(modelClass.getName())
+                        .component("equals(copy)")
+                        .status(Assert.assertEquals(model, newModel) ? TestStatus.PASS : TestStatus.FAIL)
+                        .build());
+                deepTest(model, newModel, results);
             } catch (Throwable x) {
-                if (safe)
-                    deepTest(model, null);
-                else
+                if (safe) {
+                    deepTest(model, null, results);
+                } else {
                     throw x;
+                }
             }
-            if (success)
-                System.out.println("Success: " + modelClass.getName() + ".equals()");
-            else
-                System.err.println("Failure: " + modelClass.getName() + ".equals()");
-            return success;
         } catch (Throwable e) {
-            System.err.println("Error: " + modelClass.getName() + ".equals()");
-            e.printStackTrace();
+            log.error("Error during equals testing for {}", modelClass.getName(), e);
+            results.add(TestResult.builder()
+                    .className(modelClass.getName())
+                    .component("equals")
+                    .status(TestStatus.ERROR)
+                    .message(e.getMessage())
+                    .error(e)
+                    .build());
         }
-        return false;
+        return results;
     }
 
-    private void deepTest(T model, T newModel) {
+    private void deepTest(T model, T newModel, List<TestResult> results) {
         try {
             if (newModel == null)
                 newModel = Creator.makeCopy(model);
             Set<Field> tested = new HashSet<>();
-            deepTest(model, newModel, modelClass.getDeclaredFields(), tested);
-            deepTest(model, newModel, modelClass.getFields(), tested);
+            deepTest(model, newModel, ReflectionCache.getFields(modelClass), tested, results);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("Error during deep equals testing for {}", modelClass.getName(), e);
         }
     }
 
-    private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested) {
+    private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested, List<TestResult> results) {
         boolean restore = modelClass.isEnum();
         Map<Field, Object> backup = new HashMap<>();
         for (Field field : fields) {
@@ -97,7 +120,13 @@ class EqualsTester<T> implements Tester {
                         field.set(newModel, (byte) 20);
                     else
                         field.set(newModel, null);
-                    Assert.assertEquals(model, newModel);
+
+                    results.add(TestResult.builder()
+                            .className(modelClass.getName())
+                            .component("equals (changed " + field.getName() + ")")
+                            .status(Assert.assertEquals(model, newModel) ? TestStatus.PASS : TestStatus.FAIL)
+                            .build());
+
                     field.set(newModel, field.get(model));
                 }
             } catch (Throwable e) {
@@ -105,7 +134,7 @@ class EqualsTester<T> implements Tester {
             }
         }
         if (restore && !backup.isEmpty()) {
-            for (Map.Entry<Field, Object> entry :  backup.entrySet()) {
+            for (Map.Entry<Field, Object> entry : backup.entrySet()) {
                 try {
                     Field field = entry.getKey();
                     Object value = entry.getValue();

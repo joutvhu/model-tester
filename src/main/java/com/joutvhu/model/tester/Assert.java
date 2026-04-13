@@ -1,11 +1,15 @@
 package com.joutvhu.model.tester;
 
 import lombok.experimental.UtilityClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
 @UtilityClass
 class Assert {
+    private static final Logger log = LoggerFactory.getLogger(Assert.class);
+
     public boolean assertEquals(Object expected, Object actual) {
         return assertEquals(expected, actual, null);
     }
@@ -97,7 +101,7 @@ class Assert {
             String canonicalName = clazz.getCanonicalName();
             return canonicalName != null ? canonicalName : clazz.getName();
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("Failed to get canonical name for {}", clazz.getName(), e);
             return clazz.getName();
         }
     }
@@ -133,7 +137,7 @@ class Assert {
                     return result != null ? result : "null";
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+                log.error("Failed to convert object to string", e);
                 return defaultToString(obj);
             }
         }

@@ -1,5 +1,8 @@
 package com.joutvhu.model.tester;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class ConstructorTester<T> implements Tester {
     private Creator<T> creatable;
 
@@ -8,20 +11,26 @@ class ConstructorTester<T> implements Tester {
     }
 
     @Override
-    public boolean test() {
+    public List<TestResult> test() {
+        List<TestResult> results = new ArrayList<>();
         try {
             T result = creatable.create();
-            boolean success = Assert.assertNotNull(result);
-            if (success)
-                System.out.println("Success: " + creatable.modelClass.getName() + "(" + params() + ")");
-            else
-                System.err.println("Failure: " + creatable.modelClass.getName() + "(" + params() + ")");
-            return success;
+            boolean pass = Assert.assertNotNull(result);
+            results.add(TestResult.builder()
+                    .className(creatable.modelClass.getName())
+                    .component("Constructor(" + params() + ")")
+                    .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                    .build());
         } catch (Throwable e) {
-            System.err.println("Error: " + creatable.modelClass.getName() + "(" + params() + ")");
-            e.printStackTrace();
+            results.add(TestResult.builder()
+                    .className(creatable.modelClass.getName())
+                    .component("Constructor(" + params() + ")")
+                    .status(TestStatus.ERROR)
+                    .message(e.getMessage())
+                    .error(e)
+                    .build());
         }
-        return false;
+        return results;
     }
 
     private String params() {

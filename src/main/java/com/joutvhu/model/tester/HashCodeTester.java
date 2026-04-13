@@ -1,5 +1,8 @@
 package com.joutvhu.model.tester;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class HashCodeTester<T> implements Tester {
     private final Class<T> modelClass;
     private final boolean safe;
@@ -14,25 +17,35 @@ class HashCodeTester<T> implements Tester {
     }
 
     @Override
-    public boolean test() {
+    public List<TestResult> test() {
+        List<TestResult> results = new ArrayList<>();
         try {
             T model = Creator.anyOf(modelClass).create();
-            boolean success = true;
             if (safe) {
-                success = Assert.assertEquals(model.hashCode(), model.hashCode());
+                boolean pass = Assert.assertEquals(model.hashCode(), model.hashCode());
+                results.add(TestResult.builder()
+                        .className(modelClass.getName())
+                        .component("hashCode(itself)")
+                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                        .build());
             } else {
                 T newModel = Creator.makeCopy(model);
-                success = Assert.assertEquals(model.hashCode(), newModel.hashCode());
+                boolean pass = Assert.assertEquals(model.hashCode(), newModel.hashCode());
+                results.add(TestResult.builder()
+                        .className(modelClass.getName())
+                        .component("hashCode(copy)")
+                        .status(pass ? TestStatus.PASS : TestStatus.FAIL)
+                        .build());
             }
-            if (success)
-                System.out.println("Success: " + modelClass.getName() + ".hashCode()");
-            else
-                System.err.println("Failure: " + modelClass.getName() + ".hashCode()");
-            return success;
         } catch (Throwable e) {
-            System.err.println("Error: " + modelClass.getName() + ".hashCode()");
-            e.printStackTrace();
+            results.add(TestResult.builder()
+                    .className(modelClass.getName())
+                    .component("hashCode")
+                    .status(TestStatus.ERROR)
+                    .message(e.getMessage())
+                    .error(e)
+                    .build());
         }
-        return false;
+        return results;
     }
 }
