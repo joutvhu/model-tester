@@ -33,26 +33,24 @@ class EqualsTester<T> implements Tester {
         try {
             T model = Creator.anyOf(modelClass).create();
             // Check with itself
-            results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("equals(itself)")
-                    .status(Assert.assertEquals(model, model) ? TestStatus.PASS : TestStatus.FAIL)
-                    .build());
+            results.add(runTest(modelClass.getName(), "equals(itself)", () -> {
+                if (!model.equals(model)) {
+                    throw new TesterException("Object should be equal to itself");
+                }
+            }));
 
             // Check equals(null)
-            results.add(TestResult.builder()
-                    .className(modelClass.getName())
-                    .component("equals(null)")
-                    .status((model != null && !model.equals(null)) ? TestStatus.PASS : TestStatus.FAIL)
-                    .build());
+            results.add(runTest(modelClass.getName(), "equals(null)", () -> {
+                if (model != null && model.equals(null)) {
+                    throw new TesterException("Object should not be equal to null");
+                }
+            }));
 
             try {
                 T newModel = Creator.makeCopy(model);
-                results.add(TestResult.builder()
-                        .className(modelClass.getName())
-                        .component("equals(copy)")
-                        .status(Assert.assertEquals(model, newModel) ? TestStatus.PASS : TestStatus.FAIL)
-                        .build());
+                results.add(runTest(modelClass.getName(), "equals(copy)", () -> {
+                    Assert.assertEquals(model, newModel, "Copy should be equal to original");
+                }));
                 deepTest(model, newModel, results);
             } catch (Throwable x) {
                 if (safe) {
@@ -74,6 +72,32 @@ class EqualsTester<T> implements Tester {
         return results;
     }
 
+    private TestResult runTest(String className, String component, Runnable test) {
+        try {
+            test.run();
+            return TestResult.builder()
+                    .className(className)
+                    .component(component)
+                    .status(TestStatus.PASS)
+                    .build();
+        } catch (TesterException e) {
+            return TestResult.builder()
+                    .className(className)
+                    .component(component)
+                    .status(TestStatus.FAIL)
+                    .message(e.getMessage())
+                    .build();
+        } catch (Throwable e) {
+            return TestResult.builder()
+                    .className(className)
+                    .component(component)
+                    .status(TestStatus.ERROR)
+                    .message(e.getMessage())
+                    .error(e)
+                    .build();
+        }
+    }
+
     private void deepTest(T model, T newModel, List<TestResult> results) {
         try {
             if (newModel == null)
@@ -86,48 +110,29 @@ class EqualsTester<T> implements Tester {
     }
 
     private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested, List<TestResult> results) {
-        boolean restore = modelClass.isEnum();
+        boolean restore = true;
         Map<Field, Object> backup = new HashMap<>();
         for (Field field : fields) {
-            try {
-                if (restore) {
-                    field.setAccessible(true);
-                    backup.put(field, field.get(model));
-                }
-            } catch (Throwable e) {
-                // Do nothing
-            }
             try {
                 if (!tested.contains(field) && !Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
                     tested.add(field);
                     field.setAccessible(true);
-                    Class<?> fieldType = field.getType();
-                    if (fieldType == boolean.class)
-                        field.set(newModel, false);
-                    else if (fieldType == int.class)
-                        field.set(newModel, 1);
-                    else if (fieldType == long.class)
-                        field.set(newModel, 2l);
-                    else if (fieldType == float.class)
-                        field.set(newModel, 1.1);
-                    else if (fieldType == double.class)
-                        field.set(newModel, 1.2);
-                    else if (fieldType == char.class)
-                        field.set(newModel, 'v');
-                    else if (fieldType == byte.class)
-                        field.set(newModel, (byte) 10);
-                    else if (fieldType == short.class)
-                        field.set(newModel, (byte) 20);
-                    else
-                        field.set(newModel, null);
+                    
+                    Object originalValue = field.get(model);
+                    if (restore) {
+                        backup.put(field, originalValue);
+                    }
+                    
+                    Object newValue = createDifferentValue(field.getType(), originalValue);
+                    field.set(newModel, newValue);
 
-                    results.add(TestResult.builder()
-                            .className(modelClass.getName())
-                            .component("equals (changed " + field.getName() + ")")
-                            .status(Assert.assertEquals(model, newModel) ? TestStatus.PASS : TestStatus.FAIL)
-                            .build());
+                    results.add(runTest(modelClass.getName(), "equals (changed " + field.getName() + ")", () -> {
+                        if (model.equals(newModel)) {
+                            throw new TesterException("Objects should NOT be equal after changing field: " + field.getName());
+                        }
+                    }));
 
-                    field.set(newModel, field.get(model));
+                    field.set(newModel, originalValue);
                 }
             } catch (Throwable e) {
                 // Do nothing
@@ -144,5 +149,25 @@ class EqualsTester<T> implements Tester {
                 }
             }
         }
+    }
+
+    private Object createDifferentValue(Class<?> fieldType, Object originalValue) {
+        if (fieldType == boolean.class || fieldType == Boolean.class)
+            return originalValue != null && (Boolean) originalValue ? false : true;
+        if (fieldType == int.class || fieldType == Integer.class)
+            return (originalValue != null ? (Integer) originalValue : 0) + 1;
+        if (fieldType == long.class || fieldType == Long.class)
+            return (originalValue != null ? (Long) originalValue : 0L) + 1L;
+        if (fieldType == float.class || fieldType == Float.class)
+            return (originalValue != null ? (Float) originalValue : 0.0f) + 1.1f;
+        if (fieldType == double.class || fieldType == Double.class)
+            return (originalValue != null ? (Double) originalValue : 0.0) + 1.2;
+        if (fieldType == char.class || fieldType == Character.class)
+            return originalValue != null && (Character) originalValue == 'a' ? 'b' : 'a';
+        if (fieldType == byte.class || fieldType == Byte.class)
+            return (byte) ((originalValue != null ? (Byte) originalValue : 0) + 1);
+        if (fieldType == short.class || fieldType == Short.class)
+            return (short) ((originalValue != null ? (Short) originalValue : 0) + 1);
+        return null;
     }
 }

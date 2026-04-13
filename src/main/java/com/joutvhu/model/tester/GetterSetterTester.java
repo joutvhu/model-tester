@@ -126,6 +126,13 @@ class GetterSetterTester<T> implements Tester {
                     .status(pass ? TestStatus.PASS : TestStatus.FAIL)
                     .message(pass ? null : "Value mismatch")
                     .build();
+        } catch (TesterException e) {
+            return TestResult.builder()
+                    .className(modelClass.getName())
+                    .component(method.getName())
+                    .status(TestStatus.FAIL)
+                    .message(e.getMessage())
+                    .build();
         } catch (Throwable e) {
             return TestResult.builder()
                     .className(modelClass.getName())
@@ -196,6 +203,13 @@ class GetterSetterTester<T> implements Tester {
                     .component(method.getName())
                     .status(pass ? TestStatus.PASS : TestStatus.FAIL)
                     .message(pass ? null : "Value mismatch or incorrect return for fluent setter")
+                    .build();
+        } catch (TesterException e) {
+            return TestResult.builder()
+                    .className(modelClass.getName())
+                    .component(method.getName())
+                    .status(TestStatus.FAIL)
+                    .message(e.getMessage())
                     .build();
         } catch (Throwable e) {
             return TestResult.builder()
