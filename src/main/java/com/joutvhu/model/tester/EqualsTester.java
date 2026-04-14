@@ -34,12 +34,12 @@ class EqualsTester<T> implements Tester {
         this.safe = safe;
     }
 
-    @Override
     /**
      * Tests the equals method for reflexivity, null-safety, and behavior on field changes.
      *
      * @return list of results for each scenario tested.
      */
+    @Override
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

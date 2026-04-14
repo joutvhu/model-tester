@@ -15,12 +15,12 @@ class ConstructorTester<T> implements Tester {
         this.creatable = creatable;
     }
 
-    @Override
     /**
      * Executes the constructor test by attempting to instantiate the class via the provided {@link Creator}.
      *
      * @return list containing the result of the instantiation attempt.
      */
+    @Override
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

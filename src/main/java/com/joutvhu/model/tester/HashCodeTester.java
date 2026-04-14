@@ -22,12 +22,12 @@ class HashCodeTester<T> implements Tester {
         this.safe = safe;
     }
 
-    @Override
     /**
      * Verifies that equal objects have consistent hash codes.
      *
      * @return list of results for hash code consistency check.
      */
+    @Override
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

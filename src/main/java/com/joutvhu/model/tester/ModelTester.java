@@ -1,5 +1,6 @@
 package com.joutvhu.model.tester;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,10 @@ public class ModelTester<T> {
 
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
+    /**
+     * Retrieves the results of the executed tests.
+     */
+    @Getter
     private final List<TestResult> results = new ArrayList<>();
     private NamingStrategy namingStrategy = NamingStrategy.DEFAULT;
 
@@ -239,15 +244,6 @@ public class ModelTester<T> {
                 .forEach(r -> log.error("  - {}", r));
         }
         return success;
-    }
-
-    /**
-     * Retrieves the results of the executed tests.
-     *
-     * @return a list of {@link TestResult} containing test details.
-     */
-    public List<TestResult> getResults() {
-        return results;
     }
 
     /**

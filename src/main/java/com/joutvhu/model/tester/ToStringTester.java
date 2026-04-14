@@ -23,12 +23,12 @@ class ToStringTester<T> implements Tester {
         this.safe = safe;
     }
 
-    @Override
     /**
      * Verifies that the toString method returns consistent results and doesn't crash.
      *
      * @return list of results for string representation check.
      */
+    @Override
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

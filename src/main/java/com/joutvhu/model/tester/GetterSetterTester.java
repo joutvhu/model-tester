@@ -44,12 +44,12 @@ class GetterSetterTester<T> implements Tester {
         return this;
     }
 
-    @Override
     /**
      * Executes the getter and setter tests for all identified methods in the model class.
      *
      * @return list of results for each method tested.
      */
+    @Override
     public List<TestResult> test() {
         List<TestResult> results = new ArrayList<>();
         try {

@@ -1,5 +1,7 @@
 package com.joutvhu.model.tester;
 
+import lombok.experimental.UtilityClass;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -12,13 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Simple thread-safe cache for reflection metadata (fields and methods) to improve performance
  * during intensive model testing.
  */
+@UtilityClass
 public class ReflectionCache {
-    private static final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
-    private static final Map<Class<?>, Method[]> methodsCache = new ConcurrentHashMap<>();
-
-    private ReflectionCache() {
-        // Prevent instantiation
-    }
+    private final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Method[]> methodsCache = new ConcurrentHashMap<>();
 
     /**
      * Retrieves all fields of a class, including private and inherited ones, with caching.
@@ -26,7 +25,7 @@ public class ReflectionCache {
      * @param clazz the class to inspect.
      * @return an array of all discovered {@link Field} objects.
      */
-    public static Field[] getFields(Class<?> clazz) {
+    public Field[] getFields(Class<?> clazz) {
         return fieldsCache.computeIfAbsent(clazz, c -> {
             Set<Field> fields = new HashSet<>();
             Class<?> current = c;
@@ -45,7 +44,7 @@ public class ReflectionCache {
      * @param clazz the class to inspect.
      * @return an array of all discovered {@link Method} objects.
      */
-    public static Method[] getMethods(Class<?> clazz) {
+    public Method[] getMethods(Class<?> clazz) {
         return methodsCache.computeIfAbsent(clazz, c -> {
             Set<Method> methods = new HashSet<>();
             Class<?> current = c;
