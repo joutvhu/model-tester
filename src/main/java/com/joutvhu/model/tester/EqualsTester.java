@@ -1,12 +1,24 @@
 package com.joutvhu.model.tester;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Tester implementation for verifying the {@link Object#equals(Object)} contract.
+ * Checks for reflexivity, null-safety, and verifies that changing field values
+ * results in inequality.
+ *
+ * @param <T> the type of model being tested
+ */
+@Slf4j
 class EqualsTester<T> implements Tester {
     private final Class<T> modelClass;
     private final boolean safe;
@@ -20,92 +32,129 @@ class EqualsTester<T> implements Tester {
         this.safe = safe;
     }
 
+    /**
+     * Tests the equals method for reflexivity, null-safety, and behavior on field changes.
+     *
+     * @return list of results for each scenario tested.
+     */
     @Override
-    public boolean test() {
+    public List<TestResult> test() {
+        List<TestResult> results = new ArrayList<>();
         try {
             T model = Creator.anyOf(modelClass).create();
             // Check with itself
-            boolean success = Assert.assertEquals(model, model);
+            results.add(runTest(modelClass.getName(), "equals(itself)", () -> {
+                if (!model.equals(model)) {
+                    throw new TesterException("Object should be equal to itself");
+                }
+            }));
+
             // Check equals(null)
-            success = model != null && !model.equals(null) && success;
+            results.add(runTest(modelClass.getName(), "equals(null)", () -> {
+                if (model != null && model.equals(null)) {
+                    throw new TesterException("Object should not be equal to null");
+                }
+            }));
+
             try {
                 T newModel = Creator.makeCopy(model);
-                success = Assert.assertEquals(model, newModel) && success;
-                deepTest(model, newModel);
+                results.add(runTest(modelClass.getName(), "equals(copy)", () -> {
+                    Assert.assertEquals(model, newModel, "Copy should be equal to original");
+                }));
+                if (!modelClass.isEnum()) {
+                    deepTest(model, newModel, results);
+                }
             } catch (Throwable x) {
-                if (safe)
-                    deepTest(model, null);
-                else
+                if (safe) {
+                    deepTest(model, null, results);
+                } else {
                     throw x;
+                }
             }
-            if (success)
-                System.out.println("Success: " + modelClass.getName() + ".equals()");
-            else
-                System.err.println("Failure: " + modelClass.getName() + ".equals()");
-            return success;
         } catch (Throwable e) {
-            System.err.println("Error: " + modelClass.getName() + ".equals()");
-            e.printStackTrace();
+            log.error("Error during equals testing for {}", modelClass.getName(), e);
+            results.add(TestResult.builder()
+                .className(modelClass.getName())
+                .component("equals")
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build());
         }
-        return false;
+        return results;
     }
 
-    private void deepTest(T model, T newModel) {
+    /**
+     * Internal helper to execute a singular test and wrap it in a TestResult.
+     */
+    private TestResult runTest(String className, String component, Runnable test) {
+        try {
+            test.run();
+            return TestResult.builder()
+                .className(className)
+                .component(component)
+                .status(TestStatus.PASS)
+                .build();
+        } catch (TesterException e) {
+            return TestResult.builder()
+                .className(className)
+                .component(component)
+                .status(TestStatus.FAIL)
+                .message(e.getMessage())
+                .build();
+        } catch (Throwable e) {
+            return TestResult.builder()
+                .className(className)
+                .component(component)
+                .status(TestStatus.ERROR)
+                .message(e.getMessage())
+                .error(e)
+                .build();
+        }
+    }
+
+    private void deepTest(T model, T newModel, List<TestResult> results) {
         try {
             if (newModel == null)
                 newModel = Creator.makeCopy(model);
             Set<Field> tested = new HashSet<>();
-            deepTest(model, newModel, modelClass.getDeclaredFields(), tested);
-            deepTest(model, newModel, modelClass.getFields(), tested);
+            deepTest(model, newModel, ReflectionCache.getFields(modelClass), tested, results);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("Error during deep equals testing for {}", modelClass.getName(), e);
         }
     }
 
-    private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested) {
-        boolean restore = modelClass.isEnum();
+    private void deepTest(T model, T newModel, Field[] fields, Set<Field> tested, List<TestResult> results) {
+        boolean restore = true;
         Map<Field, Object> backup = new HashMap<>();
         for (Field field : fields) {
-            try {
-                if (restore) {
-                    field.setAccessible(true);
-                    backup.put(field, field.get(model));
-                }
-            } catch (Throwable e) {
-                // Do nothing
-            }
             try {
                 if (!tested.contains(field) && !Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
                     tested.add(field);
                     field.setAccessible(true);
-                    Class<?> fieldType = field.getType();
-                    if (fieldType == boolean.class)
-                        field.set(newModel, false);
-                    else if (fieldType == int.class)
-                        field.set(newModel, 1);
-                    else if (fieldType == long.class)
-                        field.set(newModel, 2l);
-                    else if (fieldType == float.class)
-                        field.set(newModel, 1.1);
-                    else if (fieldType == double.class)
-                        field.set(newModel, 1.2);
-                    else if (fieldType == char.class)
-                        field.set(newModel, 'v');
-                    else if (fieldType == byte.class)
-                        field.set(newModel, (byte) 10);
-                    else if (fieldType == short.class)
-                        field.set(newModel, (byte) 20);
-                    else
-                        field.set(newModel, null);
-                    Assert.assertEquals(model, newModel);
-                    field.set(newModel, field.get(model));
+
+                    Object originalValue = field.get(model);
+                    if (restore) {
+                        backup.put(field, originalValue);
+                    }
+
+                    Object newValue = createDifferentValue(field.getType(), originalValue);
+                    field.set(newModel, newValue);
+
+                    results.add(runTest(modelClass.getName(), "equals (changed " + field.getName() + ")", () -> {
+                        if (model.equals(newModel)) {
+                            throw new TesterException("Objects should NOT be equal after changing field: " + field.getName());
+                        }
+                    }));
+
+                    field.set(newModel, originalValue);
                 }
             } catch (Throwable e) {
                 // Do nothing
             }
         }
         if (restore && !backup.isEmpty()) {
-            for (Map.Entry<Field, Object> entry :  backup.entrySet()) {
+            for (Map.Entry<Field, Object> entry : backup.entrySet()) {
                 try {
                     Field field = entry.getKey();
                     Object value = entry.getValue();
@@ -115,5 +164,38 @@ class EqualsTester<T> implements Tester {
                 }
             }
         }
+    }
+
+    private Object createDifferentValue(Class<?> fieldType, Object originalValue) {
+        if (fieldType == boolean.class || fieldType == Boolean.class)
+            return originalValue != null && (Boolean) originalValue ? false : true;
+        if (fieldType == int.class || fieldType == Integer.class)
+            return (originalValue != null ? (Integer) originalValue : 0) + 1;
+        if (fieldType == long.class || fieldType == Long.class)
+            return (originalValue != null ? (Long) originalValue : 0L) + 1L;
+        if (fieldType == float.class || fieldType == Float.class)
+            return (originalValue != null ? (Float) originalValue : 0.0f) + 1.1f;
+        if (fieldType == double.class || fieldType == Double.class)
+            return (originalValue != null ? (Double) originalValue : 0.0) + 1.2;
+        if (fieldType == char.class || fieldType == Character.class)
+            return originalValue != null && (Character) originalValue == 'a' ? 'b' : 'a';
+        if (fieldType == byte.class || fieldType == Byte.class)
+            return (byte) ((originalValue != null ? (Byte) originalValue : 0) + 1);
+        if (fieldType == short.class || fieldType == Short.class)
+            return (short) ((originalValue != null ? (Short) originalValue : 0) + 1);
+
+        if (fieldType == String.class)
+            return (originalValue != null ? (String) originalValue : "") + "diff";
+        if (java.util.Date.class.isAssignableFrom(fieldType))
+            return new java.util.Date((originalValue != null ? ((java.util.Date) originalValue).getTime() : 0) + 1000);
+
+        if (java.util.List.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singletonList("diff");
+        if (java.util.Set.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singleton("diff");
+        if (java.util.Map.class.isAssignableFrom(fieldType))
+            return java.util.Collections.singletonMap("diff", "diff");
+
+        return originalValue == null ? new Object() : null;
     }
 }

@@ -1,6 +1,7 @@
 package com.joutvhu.model.tester;
 
 import javassist.util.proxy.ProxyFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -14,6 +15,13 @@ import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.*;
 
+/**
+ * Utility for creating instances of classes, interfaces, and abstracts.
+ * Handles automatic data generation for primitives, collections, and common types.
+ *
+ * @param <T> the type of object to create
+ */
+@Slf4j
 public class Creator<T> {
     final Class<T> modelClass;
     final List<Creator<?>> parameters;
@@ -27,6 +35,13 @@ public class Creator<T> {
         this.values = values;
     }
 
+    /**
+     * Factory method to create a Creator for a specific constructor.
+     *
+     * @param constructor the constructor to use.
+     * @param <T>         the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> of(Constructor<T> constructor) {
         List<Creator<?>> parameters = new ArrayList<>();
         for (Class<?> parameterType : constructor.getParameterTypes()) {
@@ -35,14 +50,38 @@ public class Creator<T> {
         return new Creator<>(constructor.getDeclaringClass(), parameters, null, null);
     }
 
+    /**
+     * Factory method to create a Creator for a class and its dependencies.
+     *
+     * @param modelClass the class to create.
+     * @param parameters decorators/creators for construction parameters.
+     * @param <T>        the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> of(Class<T> modelClass, Creator<?>... parameters) {
         return new Creator<>(modelClass, Arrays.asList(parameters), null, null);
     }
 
+    /**
+     * Factory method to create a Creator using pre-defined parameter values.
+     *
+     * @param modelClass the class to create.
+     * @param parameters raw parameter values.
+     * @param <T>        the type of object.
+     * @return a new Creator instance.
+     */
     public static <T> Creator<T> byParams(Class<T> modelClass, Object... parameters) {
         return new Creator<>(modelClass, null, null, parameters);
     }
 
+    /**
+     * Attempts to create a default Creator for a class by inspecting its constructors
+     * and recursive dependencies.
+     *
+     * @param modelClass the class to analyze.
+     * @param <T>        the type of object.
+     * @return a configured Creator instance.
+     */
     public static <T> Creator<T> anyOf(Class<T> modelClass) {
         T result = tryMakeProxy(modelClass);
         if (result != null)
@@ -67,6 +106,13 @@ public class Creator<T> {
         return new Creator<>(modelClass, new ArrayList<>(), null, null);
     }
 
+    /**
+     * Finds all possible ways to create an instance of a class (one for each constructor).
+     *
+     * @param modelClass the class to analyze.
+     * @param <T>        the type of object.
+     * @return an array of Creators.
+     */
     public static <T> Creator<T>[] allOf(Class<T> modelClass) {
         ArrayList<Creator<T>> creators = new ArrayList<>();
         if (modelClass.isEnum()) {
@@ -92,6 +138,16 @@ public class Creator<T> {
         return creators.toArray(new Creator[creators.size()]);
     }
 
+    /**
+     * Executes the creation logic according to the configuration.
+     * Handles proxies for interfaces/abstracts and complex instantiation.
+     *
+     * @return a new instance of type T.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
+     */
     public T create() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (staticValue != null)
             return staticValue;
@@ -173,6 +229,18 @@ public class Creator<T> {
         });
     }
 
+    /**
+     * Static utility to create an instance using specific Creators.
+     *
+     * @param <T>        the type of the model to create.
+     * @param modelClass the class of the model.
+     * @param parameters the list of creators for the constructor parameters.
+     * @return a new instance of modelClass.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
+     */
     public static <T> T create(Class<T> modelClass, List<Creator<?>> parameters) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] parameterTypes = new Class[parameters.size()];
         Object[] params = new Object[parameters.size()];
@@ -191,6 +259,18 @@ public class Creator<T> {
         return (T) constructor.newInstance(params);
     }
 
+    /**
+     * Static utility to create an instance using raw parameter values.
+     *
+     * @param <T>        the type of the model to create.
+     * @param modelClass the class of the model.
+     * @param params     the raw parameter values for the constructor.
+     * @return a new instance of modelClass.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
+     */
     public static <T> T create(Class<T> modelClass, Object... params) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?>[] paramClasses = new Class[params.length];
         for (int i = 0, len = params.length; i < len; i++) {
@@ -205,27 +285,39 @@ public class Creator<T> {
         try {
             return makeProxy(modelClass);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error("Failed to make proxy for {}", modelClass.getName(), e);
             return null;
         }
     }
 
+    /**
+     * Creates a shallow copy of an object for mutation testing.
+     * Deeply supports primitive types, enums, and common wrappers by identity.
+     *
+     * @param value the object to copy.
+     * @param <T>   the type.
+     * @return a new instance with copied state.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws NoSuchMethodException     if a matching constructor cannot be found.
+     * @throws IllegalAccessException    if the underlying constructor is inaccessible.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract class.
+     */
     public static <T> T makeCopy(T value) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         if (value == null)
             return null;
         Class<T> modelClass = (Class<T>) value.getClass();
         if (String.class.equals(modelClass) ||
-                Boolean.class.equals(modelClass) || modelClass == boolean.class ||
-                Integer.class.equals(modelClass) || modelClass == int.class ||
-                Long.class.equals(modelClass) || modelClass == long.class ||
-                Float.class.equals(modelClass) || modelClass == float.class ||
-                Double.class.equals(modelClass) || modelClass == double.class ||
-                Character.class.equals(modelClass) || modelClass == char.class ||
-                Byte.class.equals(modelClass) || modelClass == byte.class ||
-                Short.class.equals(modelClass) || modelClass == short.class ||
-                BigInteger.class.equals(modelClass) ||
-                BigDecimal.class.equals(modelClass) ||
-                modelClass.isEnum())
+            Boolean.class.equals(modelClass) || modelClass == boolean.class ||
+            Integer.class.equals(modelClass) || modelClass == int.class ||
+            Long.class.equals(modelClass) || modelClass == long.class ||
+            Float.class.equals(modelClass) || modelClass == float.class ||
+            Double.class.equals(modelClass) || modelClass == double.class ||
+            Character.class.equals(modelClass) || modelClass == char.class ||
+            Byte.class.equals(modelClass) || modelClass == byte.class ||
+            Short.class.equals(modelClass) || modelClass == short.class ||
+            BigInteger.class.equals(modelClass) ||
+            BigDecimal.class.equals(modelClass) ||
+            modelClass.isEnum())
             return value;
         T newValue = anyOf(modelClass).create();
         if (value instanceof Map) {
@@ -233,12 +325,7 @@ public class Creator<T> {
         } else if (value instanceof Collection) {
             ((Collection) newValue).addAll((Collection) value);
         } else if (newValue != null) {
-            Class<?> clazz = modelClass;
-            do {
-                copyFields(modelClass.getDeclaredFields(), value, newValue);
-                copyFields(modelClass.getFields(), value, newValue);
-                clazz = clazz.getSuperclass();
-            } while (clazz != null && !Object.class.equals(clazz));
+            copyFields(ReflectionCache.getFields(modelClass), value, newValue);
         }
         return newValue;
     }
@@ -252,15 +339,21 @@ public class Creator<T> {
         }
     }
 
+    /**
+     * Checks if a type can hold a null value.
+     *
+     * @param modelClass the class to check.
+     * @return true if the type is nullable, false for primitives.
+     */
     public static boolean isNullable(Class<?> modelClass) {
         return modelClass != boolean.class &&
-                modelClass != int.class &&
-                modelClass != long.class &&
-                modelClass != float.class &&
-                modelClass != double.class &&
-                modelClass != char.class &&
-                modelClass != byte.class &&
-                modelClass != short.class;
+            modelClass != int.class &&
+            modelClass != long.class &&
+            modelClass != float.class &&
+            modelClass != double.class &&
+            modelClass != char.class &&
+            modelClass != byte.class &&
+            modelClass != short.class;
     }
 
     private static <T> T makeProxy(Class<T> modelClass) {

@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.github.joutvhu'
-version = '1.0.5'
+version = '1.1.0'
 
 def snapshotVersion = version.endsWith('-SNAPSHOT') || version.endsWith('.SNAPSHOT')
 
@@ -45,17 +45,19 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.javassist:javassist'
+    implementation 'org.slf4j:slf4j-api:2.0.7'
 
-    compileOnly 'org.projectlombok:lombok:1.18.26'
-    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     testImplementation(platform('org.junit:junit-bom:5.8.2'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.7'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.26'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     testImplementation 'com.google.guava:guava:31.1-jre'
     testImplementation 'org.apache.commons:commons-lang3:3.12.0'
@@ -102,6 +104,9 @@ artifacts {
 
 test {
     useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+    }
     filter {
         includeTestsMatching 'com.joutvhu.model.tester.*'
     }
