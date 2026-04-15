@@ -1,8 +1,7 @@
 package com.joutvhu.model.tester;
 
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -16,9 +15,8 @@ import java.util.List;
  *
  * @param <T> The type of the model class to test.
  */
+@Slf4j
 public class ModelTester<T> {
-    private static final Logger log = LoggerFactory.getLogger(ModelTester.class);
-
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
     /**

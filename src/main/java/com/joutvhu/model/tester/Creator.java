@@ -1,8 +1,7 @@
 package com.joutvhu.model.tester;
 
 import javassist.util.proxy.ProxyFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -22,9 +21,8 @@ import java.util.*;
  *
  * @param <T> the type of object to create
  */
+@Slf4j
 public class Creator<T> {
-    private static final Logger log = LoggerFactory.getLogger(Creator.class);
-
     final Class<T> modelClass;
     final List<Creator<?>> parameters;
     final Object[] values;

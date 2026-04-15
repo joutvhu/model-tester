@@ -1,8 +1,7 @@
 package com.joutvhu.model.tester;
 
 import lombok.experimental.UtilityClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
@@ -10,10 +9,9 @@ import java.util.Arrays;
  * Internal assertion utility for verifying model state.
  * Supports deep equality checks for collections, maps, and arrays.
  */
+@Slf4j
 @UtilityClass
 class Assert {
-    private static final Logger log = LoggerFactory.getLogger(Assert.class);
-
     /**
      * Asserts that two objects are equal using deep equality logic.
      *

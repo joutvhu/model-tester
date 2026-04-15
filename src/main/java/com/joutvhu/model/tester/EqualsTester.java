@@ -1,7 +1,6 @@
 package com.joutvhu.model.tester;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -19,9 +18,8 @@ import java.util.Set;
  *
  * @param <T> the type of model being tested
  */
+@Slf4j
 class EqualsTester<T> implements Tester {
-    private static final Logger log = LoggerFactory.getLogger(EqualsTester.class);
-
     private final Class<T> modelClass;
     private final boolean safe;
 
