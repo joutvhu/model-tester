@@ -5,7 +5,7 @@ plugins {
     id 'signing'
     id 'java-library'
     id 'maven-publish'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.github.joutvhu'
@@ -26,10 +26,12 @@ repositories {
 
 ext {
     versions = [
-            'javassist.version': '3.29.2-GA'
+            'javassist.version': '3.30.2-GA',
+            'slf4j.version': '2.0.17'
     ]
     managedVersions = [
-            'org.javassist:javassist': 'javassist.version'
+            'org.javassist:javassist': 'javassist.version',
+            'org.slf4j:slf4j-api': 'slf4j.version'
     ]
     otherVersions = [
     ]
@@ -45,22 +47,22 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.javassist:javassist'
-    implementation 'org.slf4j:slf4j-api:2.0.7'
+    implementation 'org.slf4j:slf4j-api'
 
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.44'
+    annotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-    testImplementation(platform('org.junit:junit-bom:5.8.2'))
+    testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.7'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.17'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.30'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testCompileOnly 'org.projectlombok:lombok:1.18.44'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-    testImplementation 'com.google.guava:guava:31.1-jre'
-    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+    testImplementation 'com.google.guava:guava:32.0.1-jre'
+    testImplementation 'org.apache.commons:commons-lang3:3.18.0'
 }
 
 jar {
@@ -83,17 +85,35 @@ jar {
     }
 }
 
-task fatJar(type: Jar) {
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:-options'])
+    if (name.contains("Test")) {
+        options.release.set(21)
+    } else {
+        options.release.set(8)
+    }
+}
+
+tasks.register('fatJar', Jar) {
     manifest.from jar.manifest
     with jar
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
@@ -190,21 +210,21 @@ publishing {
         maven {
             name = 'sonatype'
             if (snapshotVersion) {
-                url = 'https://oss.sonatype.org/content/repositories/snapshots'
+                url = 'https://central.sonatype.com/repository/maven-snapshots'
             } else {
-                url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+                url = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2'
             }
             credentials {
-                username = project.ossrhUsername
-                password = project.ossrhPassword
+                username = project.findProperty('ossrhToken') ?: ''
+                password = project.findProperty('ossrhTokenPassword') ?: ''
             }
         }
         maven {
             name = 'github'
-            url = "https://maven.pkg.github.com/joutvhu/model-tester"
+            url = 'https://maven.pkg.github.com/joutvhu/model-tester'
             credentials {
-                username = project.githubUsername
-                password = project.githubPassword
+                username = project.findProperty('githubUsername') ?: ''
+                password = project.findProperty('githubPassword') ?: ''
             }
         }
     }

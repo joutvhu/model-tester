@@ -22,6 +22,7 @@ import java.util.*;
  * @param <T> the type of object to create
  */
 @Slf4j
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class Creator<T> {
     final Class<T> modelClass;
     final List<Creator<?>> parameters;
@@ -88,8 +89,9 @@ public class Creator<T> {
             return new Creator<>(modelClass, null, result, null);
 
         Constructor<T>[] constructors = (Constructor<T>[]) modelClass.getConstructors();
-        if (constructors.length == 0)
+        if (constructors.length == 0) {
             constructors = (Constructor<T>[]) modelClass.getDeclaredConstructors();
+        }
         if (constructors.length > 0) {
             Constructor<T> constructor = constructors[0];
             for (Constructor<T> c : constructors) {
@@ -97,7 +99,7 @@ public class Creator<T> {
                     constructor = c;
             }
             Class<?>[] parameterTypes = constructor.getParameterTypes();
-            Creator<?>[] parameters = new Creator[parameterTypes.length];
+            Creator<?>[] parameters = new Creator<?>[parameterTypes.length];
             for (int i = 0, len = parameterTypes.length; i < len; i++) {
                 parameters[i] = anyOf(parameterTypes[i]);
             }
@@ -118,24 +120,28 @@ public class Creator<T> {
         if (modelClass.isEnum()) {
             Object[] values = EnumSet.allOf((Class<? extends Enum>) modelClass).toArray();
             for (Object value : values) {
-                creators.add(new Creator<>(modelClass, null, (T) value, null));
+                T tValue = (T) value;
+                creators.add(new Creator<>(modelClass, null, tValue, null));
             }
         } else {
             Set<Constructor<?>> created = new HashSet<>();
             for (Constructor<?> constructor : modelClass.getConstructors()) {
                 if (!created.contains(constructor)) {
                     created.add(constructor);
-                    creators.add(Creator.of((Constructor<T>) constructor));
+                    Constructor<T> tConstructor = (Constructor<T>) constructor;
+                    creators.add(Creator.of(tConstructor));
                 }
             }
             for (Constructor<?> constructor : modelClass.getDeclaredConstructors()) {
                 if (!created.contains(constructor)) {
                     created.add(constructor);
-                    creators.add(Creator.of((Constructor<T>) constructor));
+                    Constructor<T> tConstructor = (Constructor<T>) constructor;
+                    creators.add(Creator.of(tConstructor));
                 }
             }
         }
-        return creators.toArray(new Creator[creators.size()]);
+        Creator<T>[] array = (Creator<T>[]) new Creator[creators.size()];
+        return creators.toArray(array);
     }
 
     /**
@@ -184,12 +190,13 @@ public class Creator<T> {
                 }
             } else {
                 Constructor<T>[] constructors = (Constructor<T>[]) modelClass.getConstructors();
-                if (constructors.length == 0)
+                if (constructors.length == 0) {
                     constructors = (Constructor<T>[]) modelClass.getDeclaredConstructors();
+                }
                 if (constructors.length > 0) {
                     parameterTypes = constructors[0].getParameterTypes();
                 } else {
-                    parameterTypes = new Class[0];
+                    parameterTypes = new Class<?>[0];
                 }
             }
             parameterValues = new Object[parameterTypes.length];
@@ -217,7 +224,7 @@ public class Creator<T> {
     }
 
     private <T> T interfaceProxy(Class<T> modelClass) {
-        return (T) Proxy.newProxyInstance(modelClass.getClassLoader(), new Class[]{modelClass}, (proxy, method, args) -> {
+        return (T) Proxy.newProxyInstance(modelClass.getClassLoader(), new Class[]{modelClass}, (proxyInstance, method, args) -> {
             if (!Void.class.equals(method.getReturnType())) {
                 try {
                     return anyOf(method.getReturnType()).create();
@@ -321,9 +328,13 @@ public class Creator<T> {
             return value;
         T newValue = anyOf(modelClass).create();
         if (value instanceof Map) {
-            ((Map) newValue).putAll((Map) value);
+            Map<Object, Object> mapValue = (Map<Object, Object>) value;
+            Map<Object, Object> mapNewValue = (Map<Object, Object>) newValue;
+            mapNewValue.putAll(mapValue);
         } else if (value instanceof Collection) {
-            ((Collection) newValue).addAll((Collection) value);
+            Collection<Object> collectionValue = (Collection<Object>) value;
+            Collection<Object> collectionNewValue = (Collection<Object>) newValue;
+            collectionNewValue.addAll(collectionValue);
         } else if (newValue != null) {
             copyFields(ReflectionCache.getFields(modelClass), value, newValue);
         }

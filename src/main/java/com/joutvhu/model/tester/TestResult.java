@@ -1,5 +1,6 @@
 package com.joutvhu.model.tester;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +10,14 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
 public class TestResult {
+    /**
+     * Default constructor for creating an empty test result.
+     */
+    public TestResult() {
+    }
+
     /**
      * The simple or full name of the class under test.
      */
