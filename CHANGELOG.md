@@ -13,10 +13,15 @@ All notable changes to this project will be documented in this file.
 - `CODE_OF_CONDUCT.md` for project governance.
 
 ### Changed
-- Infrastructure enhancements to improve core performance and maintainability.
-- Updated compatibility for JDK 21.
-- Refactored model classes and test methods to be more descriptive and consistent.
-- Switched to Slack-style logging using `@Slf4j`.
+- Modernized build infrastructure with Gradle 8.12.1 and Java 21 toolchains.
+- Improved production compatibility for Java 8 while utilizing Java 21 for testing.
+- Switched to SLF4J logging with Lombok's `@Slf4j` annotation.
+- Refactored core infrastructure for better performance and maintainability.
+- Updated internal dependencies for improved security and stability.
+
+### Fixed
+- Resolved "unchecked or unsafe operations" Java compilation warnings in `Creator.java`.
+- Fixed various linting issues discovered during the build modernization phase.
 
 ## [1.0.5] - 2023-03-20
 
