@@ -60,6 +60,12 @@ public interface NamingStrategy {
      * Expects "get" and "set" prefixes for most fields, and "is" for boolean getters.
      */
     class DefaultNamingStrategy implements NamingStrategy {
+        /**
+         * Creates a new instance of the default naming strategy.
+         */
+        public DefaultNamingStrategy() {
+        }
+
         @Override
         public boolean isGetter(Method method) {
             String name = method.getName();
@@ -100,6 +106,12 @@ public interface NamingStrategy {
      * Getters do not have prefixes, and setters are not supported for records.
      */
     class RecordNamingStrategy extends DefaultNamingStrategy {
+        /**
+         * Creates a new instance of the record naming strategy.
+         */
+        public RecordNamingStrategy() {
+        }
+
         @Override
         public boolean isGetter(Method method) {
             if (super.isGetter(method)) return true;
@@ -133,6 +145,12 @@ public interface NamingStrategy {
      * Setters are identified by having one parameter and returning the object instance.
      */
     class FluentNamingStrategy extends DefaultNamingStrategy {
+        /**
+         * Creates a new instance of the fluent naming strategy.
+         */
+        public FluentNamingStrategy() {
+        }
+
         @Override
         public boolean isSetter(Method method) {
             if (super.isSetter(method)) return true;
