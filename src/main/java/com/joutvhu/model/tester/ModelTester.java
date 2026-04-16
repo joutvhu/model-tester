@@ -253,7 +253,11 @@ public class ModelTester<T> {
      */
     public void testAndThrows() {
         if (!test()) {
-            throw new TesterException("Fail when testing class <" + modelClass.getName() + ">");
+            StringBuilder sb = new StringBuilder("Fail when testing class <" + modelClass.getName() + ">");
+            results.stream()
+                .filter(r -> r.getStatus() != TestStatus.PASS)
+                .forEach(r -> sb.append("\n  - ").append(r));
+            throw new TesterException(sb.toString());
         }
     }
 }
