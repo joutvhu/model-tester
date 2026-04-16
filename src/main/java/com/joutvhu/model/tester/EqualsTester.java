@@ -1,7 +1,5 @@
 package com.joutvhu.model.tester;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -10,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Tester implementation for verifying the {@link Object#equals(Object)} contract.
@@ -18,8 +18,9 @@ import java.util.Set;
  *
  * @param <T> the type of model being tested
  */
-@Slf4j
 class EqualsTester<T> implements Tester {
+    private static final Logger log = Logger.getLogger(EqualsTester.class.getName());
+
     private final Class<T> modelClass;
     private final boolean safe;
 
@@ -72,7 +73,7 @@ class EqualsTester<T> implements Tester {
                 }
             }
         } catch (Throwable e) {
-            log.error("Error during equals testing for {}", modelClass.getName(), e);
+            log.log(Level.SEVERE, "Error during equals testing for " + modelClass.getName(), e);
             results.add(TestResult.builder()
                 .className(modelClass.getName())
                 .component("equals")
@@ -120,7 +121,7 @@ class EqualsTester<T> implements Tester {
             Set<Field> tested = new HashSet<>();
             deepTest(model, newModel, ReflectionCache.getFields(modelClass), tested, results);
         } catch (Throwable e) {
-            log.error("Error during deep equals testing for {}", modelClass.getName(), e);
+            log.log(Level.SEVERE, "Error during deep equals testing for " + modelClass.getName(), e);
         }
     }
 

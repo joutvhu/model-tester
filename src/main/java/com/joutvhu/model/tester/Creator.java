@@ -1,7 +1,6 @@
 package com.joutvhu.model.tester;
 
 import javassist.util.proxy.ProxyFactory;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -14,6 +13,8 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility for creating instances of classes, interfaces, and abstracts.
@@ -21,9 +22,10 @@ import java.util.*;
  *
  * @param <T> the type of object to create
  */
-@Slf4j
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class Creator<T> {
+    private static final Logger log = Logger.getLogger(Creator.class.getName());
+
     final Class<T> modelClass;
     final List<Creator<?>> parameters;
     final Object[] values;
@@ -292,7 +294,7 @@ public class Creator<T> {
         try {
             return makeProxy(modelClass);
         } catch (Throwable e) {
-            log.error("Failed to make proxy for {}", modelClass.getName(), e);
+            log.log(Level.SEVERE, "Failed to make proxy for " + modelClass.getName(), e);
             return null;
         }
     }
