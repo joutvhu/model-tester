@@ -120,14 +120,42 @@ void testCustomConstructor() {
 
 ## 📊 Test Results
 
-By using `.test()`, you receive a `List<TestResult>`. This is useful for custom reporting or soft assertions.
+The `.test()` method provides a high-level `boolean` summary. However, because `ModelTester` often executes dozens of individual checks (e.g., every getter/setter pair), you can use `.getResults()` to inspect the outcome of each specific component.
+
+Each `TestResult` contains a `TestStatus` which helps you distinguish between predictable logic failures and unexpected technical errors:
+
+| Status | Meaning | Typical Cause |
+| :--- | :--- | :--- |
+| **`PASS`** | Success | The component functions exactly as expected. |
+| **`FAIL`** | Logic Failure | An assertion failed (e.g., `getName()` didn't return the value set by `setName()`). |
+| **`ERROR`** | Technical Error | An unexpected exception occurred (e.g., `IllegalAccessException` or a crash inside your model). |
+
+### Custom Reporting Example
+If you need to log exactly which fields failed without stopping the entire build immediately:
 
 ```java
-List<TestResult> results = ModelTester.allOf(User.class).test();
+ModelTester<User> tester = ModelTester.allOf(User.class);
 
-results.stream()
-    .filter(r -> r.getStatus() == TestStatus.FAIL)
-    .forEach(r -> System.err.println("Failed: " + r.getComponent() + " - " + r.getMessage()));
+// Returns true if all components passed
+boolean success = tester.test();
+
+if (!success) {
+    // Inspect granular results
+    List<TestResult> results = tester.getResults();
+    
+    results.stream()
+        .filter(r -> r.getStatus() != TestStatus.PASS)
+        .forEach(result -> {
+            System.err.printf("[%s] %s: %s%n", 
+                result.getStatus(), 
+                result.getComponent(), 
+                result.getMessage());
+            
+            if (result.getError() != null) {
+                result.getError().printStackTrace();
+            }
+        });
+}
 ```
 
 ---
