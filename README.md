@@ -21,7 +21,6 @@
 | **Thread-safe Cache** | Optimized reflection caching to minimize overhead in large test suites. |
 | **Safe Mode** | Alternative "safe" testing methods for legacy or highly complex models. |
 | **Detailed Reporting** | Structured granular testing outcomes via `TestResult` objects. |
-| **SLF4J Logging** | Detailed diagnostic logging on test failures. |
 
 ---
 
@@ -31,10 +30,7 @@
 
 ```groovy
 dependencies {
-    testImplementation "com.github.joutvhu:model-tester:1.1.0"
-
-    // Recommended: add an SLF4J binding for detailed failure logs
-    testRuntimeOnly "org.slf4j:slf4j-simple:2.0.17"
+    testImplementation "com.github.joutvhu:model-tester:1.1.1"
 }
 ```
 
@@ -44,7 +40,7 @@ dependencies {
 <dependency>
     <groupId>com.github.joutvhu</groupId>
     <artifactId>model-tester</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -701,21 +697,6 @@ void testInvoice_withNestedModels() {
     // for Customer and InvoiceLine when building the initial test Invoice state.
     ModelTester.allOf(Invoice.class).testAndThrows();
 }
-```
-
----
-
-## 📝 Logging
-
-`ModelTester` aggressively relies on **SLF4J**. When testing failures occurs, libraries immediately inject structural diagnostics directly into system logs, outlining:
-- The execution Target Class context
-- The specific Component (Field or Method identifier) attributing to the failure
-- Structural Expected Vs Actual value matrices.
-
-Always ensure SLF4J bindings exist inside your testing scope dependencies context:
-
-```groovy
-testRuntimeOnly "org.slf4j:slf4j-simple:2.0.17"
 ```
 
 ---

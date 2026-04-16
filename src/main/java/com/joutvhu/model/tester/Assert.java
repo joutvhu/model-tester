@@ -1,17 +1,21 @@
 package com.joutvhu.model.tester;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Internal assertion utility for verifying model state.
  * Supports deep equality checks for collections, maps, and arrays.
  */
-@Slf4j
 @UtilityClass
 class Assert {
+    private static final Logger log = Logger.getLogger(Assert.class.getName());
+
     /**
      * Asserts that two objects are equal using deep equality logic.
      *
@@ -179,7 +183,7 @@ class Assert {
             String canonicalName = clazz.getCanonicalName();
             return canonicalName != null ? canonicalName : clazz.getName();
         } catch (Throwable e) {
-            log.error("Failed to get canonical name for {}", clazz.getName(), e);
+            log.log(Level.SEVERE, "Failed to get canonical name for " + clazz.getName(), e);
             return clazz.getName();
         }
     }
@@ -215,7 +219,7 @@ class Assert {
                     return result != null ? result : "null";
                 }
             } catch (Throwable e) {
-                log.error("Failed to convert object to string", e);
+                log.log(Level.SEVERE, "Failed to convert object to string", e);
                 return defaultToString(obj);
             }
         }

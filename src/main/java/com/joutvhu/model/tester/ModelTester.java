@@ -1,12 +1,12 @@
 package com.joutvhu.model.tester;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * The main entry point for testing model classes.
@@ -15,8 +15,9 @@ import java.util.List;
  *
  * @param <T> The type of the model class to test.
  */
-@Slf4j
 public class ModelTester<T> {
+    private static final Logger log = Logger.getLogger(ModelTester.class.getName());
+
     private final Class<T> modelClass;
     private final List<Tester> testers = new ArrayList<>();
     /**
@@ -234,12 +235,12 @@ public class ModelTester<T> {
         }
         boolean success = results.stream().allMatch(r -> r.getStatus() == TestStatus.PASS);
         if (success) {
-            log.info("Test passed for class <{}>", modelClass.getName());
+            log.info("Test passed for class <" + modelClass.getName() + ">");
         } else {
-            log.error("Test failed for class <{}>", modelClass.getName());
+            log.severe("Test failed for class <" + modelClass.getName() + ">");
             results.stream()
                 .filter(r -> r.getStatus() != TestStatus.PASS)
-                .forEach(r -> log.error("  - {}", r));
+                .forEach(r -> log.severe("  - " + r));
         }
         return success;
     }
