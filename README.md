@@ -30,7 +30,7 @@
 
 ```groovy
 dependencies {
-    testImplementation "com.github.joutvhu:model-tester:1.1.0"
+    testImplementation "com.github.joutvhu:model-tester:1.1.1"
 }
 ```
 
@@ -40,7 +40,7 @@ dependencies {
 <dependency>
     <groupId>com.github.joutvhu</groupId>
     <artifactId>model-tester</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <scope>test</scope>
 </dependency>
 ```

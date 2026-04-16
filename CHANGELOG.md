@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-04-16
+
+### Changed
+- Migrated from SLF4J to `java.util.logging` to achieve a zero-dependency runtime.
+
 ## [1.1.0] - 2026-04-15
 
 ### Added
